@@ -1,0 +1,110 @@
+<style>
+    .modal-dialog {
+        display: flex;
+        align-items: center;
+        min-height: calc(100% - 1rem);
+    }
+    
+    @media (min-width: 576px) {
+        .modal-dialog {
+            min-height: calc(100% - 3.5rem);
+        }
+    }
+
+    button{
+        background-color: #67b4ac;
+        color: white;
+    }
+
+    button:hover{
+        background-color: #5da39c;;
+    }
+</style>
+
+<!-- success modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {{ success_message }}
+            </div>
+            <div class="modal-footer">
+                <a href="{{ success_redirect }}" class="btn btn-primary">{{ success_button_text }}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- error modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel">Error</h5>
+            </div>
+            <div class="modal-body">
+                {{ error_message }}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- user not found modal -->
+<div class="modal fade" id="userNotFoundModal" tabindex="-1" aria-labelledby="userNotFoundModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userNotFoundModalLabel">User Not Found</h5>
+            </div>
+            <div class="modal-body">
+                The username you entered does not exist in our system.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- incorrect password modal -->
+<div class="modal fade" id="incorrectPasswordModal" tabindex="-1" aria-labelledby="incorrectPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="incorrectPasswordModalLabel">Incorrect Password</h5>
+            </div>
+            <div class="modal-body">
+                The password you entered is incorrect. Please try again.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+    var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+    var userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
+    var incorrectPasswordModal = new bootstrap.Modal(document.getElementById('incorrectPasswordModal'));
+    
+    if (document.body.dataset.showModal === 'success') {
+        successModal.show();
+    } else if (document.body.dataset.showModal === 'error') {
+        errorModal.show();
+    } else if (document.body.dataset.showModal === 'user_not_found') {
+        userNotFoundModal.show();
+    } else if (document.body.dataset.showModal === 'incorrect_password') {
+        incorrectPasswordModal.show();
+    }
+});
+</script>
