@@ -24,6 +24,8 @@ def login():
         username = request.form['username']
         password = request.form['password']
         
+        session["username"] = request.form.get("username")
+        
         if username not in users:
             return render_template('login.html', show_modal='user_not_found')
         elif users[username] != password:
@@ -58,8 +60,14 @@ def password_reset():
 
 @app.route('/home')
 def home():
+    if not session.get("username"):
+        return redirect("/login")
     return render_template('home.html')
 
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect("/login")
 
 # sample data
 @app.route('/populate_test_data')
@@ -85,7 +93,34 @@ def create_user():
 
 @app.route('/get_users', methods=['GET', 'POST'])
 def get_users():
-    users = User.query.all() 
+    sort_by = request.args.get('sort_by', 'id')  # default to sorting by ID
+    filter_status = request.args.get('filter_by', 'all')  # default to no filter
+    search_query = request.args.get('search', '')
+    
+    query = User.query
+
+    # filtering logic
+    if filter_status == 'active':
+        query = query.filter_by(status='Active')
+    elif filter_status == 'inactive':
+        query = query.filter(User.status.in_(['Inactive', 'Disabled']))
+    elif filter_status == 'all':
+        query = query.filter(User.status.in_(['Active', 'Inactive', 'Disabled']))
+
+    # sorting logic
+    if sort_by == 'username':
+        query = query.order_by(User.username)
+    elif sort_by == 'id':
+        query = query.order_by(User.id)
+    elif sort_by == 'directory':
+        query = query.order_by(User.directory)
+    
+    
+    # search logic
+    if search_query:
+        query = query.filter(User.username.like(f'%{search_query}%')) # case insensitive search
+    
+    users = query.all() 
     return render_template('user_table.html', users=users) # renders the user table component
 
 

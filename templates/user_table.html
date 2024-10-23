@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Table Component</title>
+    <script src="/static/scripts.js"></script>
     <script>$('.dropdown-toggle').dropdown()</script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
@@ -13,24 +14,34 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </head>
 <body>
-
     <nav class="navbar navbar-light bg-light justify-content-between">
         <a class="navbar-brand">List of Users</a>
-        <form class="form-inline d-flex align-items-center" method="POST">
-            <!-- TODO: apply logic to the sorting -->
+        <form class="form-inline d-flex align-items-center" method="GET" action="/get_users">
+            <!--TODO: add search logic-->
             <div class="dropdown me-3">
-                <button class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" type="button" id="dropdownMenuButton" aria-expanded="false">
+                <button class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" type="button" id="sortDropdown" aria-expanded="false">
                     Sort by
                 </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <li><a class="dropdown-item" href="#">Username</a></li>
-                    <li><a class="dropdown-item" href="#">ID</a></li>
-                    <li><a class="dropdown-item" href="#">Active</a></li>
-                    <li><a class="dropdown-item" href="#">Inactive/Disabled</a></li>
+                <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="updateURLParams('sort_by', 'username')">Username</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="updateURLParams('sort_by', 'id')">ID</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="updateURLParams('sort_by', 'directory')">Directory</a></li>
                 </ul>
             </div>
-            <input class="form-control mr-sm-5" type="search" placeholder="Enter username" aria-label="Search">
-            <button class="btn btn-outline-success me-3 my-2 my-sm-0" type="submit">Search</button>
+    
+            <div class="dropdown me-3">
+                <button class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" type="button" id="filterDropdown" aria-expanded="false">
+                    Filter by
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="updateURLParams('filter_by', 'active')">Active</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="updateURLParams('filter_by', 'inactive')">Inactive/Disabled</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="updateURLParams('filter_by', 'all')">All</a></li>
+                </ul>
+            </div>
+    
+            <input class="form-control mr-sm-5" type="search" placeholder="Enter username" aria-label="Search" name="search" value="{{ request.args.get('search', '') }}"">
+            <button class="btn btn-outline-success ms-2 me-3 my-2 my-sm-0" type="submit">Search</button>
         </form>
     </nav>
 
@@ -45,14 +56,20 @@
           </tr>
         </thead>
         <tbody>
-            {% for user in users %}
-            <tr>
-                <th scope="row">{{ user.id }}</th>
-                <td>{{ user.username }}</td>
-                <td>{{ user.directory }}</td>
-                <td>{{ user.status }}</td>
-            </tr>
-            {% endfor %}
+            {% if users %}
+                {% for user in users %}
+                <tr>
+                    <th scope="row">{{ user.id }}</th>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.directory }}</td>
+                    <td>{{ user.status }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">No users found</td>
+                </tr>
+            {% endif %}
         </tbody>
       </table>
 </body>

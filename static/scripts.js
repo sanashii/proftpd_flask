@@ -26,12 +26,32 @@ $(document).ready(function() {
 
 function logout() {
     window.location.href = "/";
-  }
+}
 
-  function loadContent(url) {
+function loadContent(url) {
     fetch(url)
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('content').innerHTML = data;
-      });
-  }
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('content').innerHTML = data;
+    });
+}
+
+function back() {
+    window.location.href = "/";
+}
+
+function validateForm() {
+    var password = document.getElementById("password").value;
+    var confirmPassword = document.getElementById("confirm-password").value;
+    if (password != confirmPassword) {
+        alert("Passwords do not match.");
+        return false;
+    }
+    return true;
+}
+
+function updateURLParams(param, value) {
+    const url = new URL(window.location);
+    url.searchParams.set(param, value); 
+    window.location.href = url.toString(); 
+}
