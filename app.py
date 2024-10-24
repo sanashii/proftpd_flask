@@ -73,7 +73,6 @@ def home():
 def get_filtered_sorted_users(sort_by='id', filter_status='all', search_query=''):
     query = User.query
 
-    # Filtering logic
     if filter_status == 'active':
         query = query.filter_by(status='Active')
     elif filter_status == 'inactive':
@@ -81,7 +80,6 @@ def get_filtered_sorted_users(sort_by='id', filter_status='all', search_query=''
     elif filter_status == 'all':
         query = query.filter(User.status.in_(['Active', 'Inactive', 'Disabled']))
 
-    # Sorting logic
     if sort_by == 'username':
         query = query.order_by(User.username)
     elif sort_by == 'id':
@@ -89,13 +87,12 @@ def get_filtered_sorted_users(sort_by='id', filter_status='all', search_query=''
     elif sort_by == 'directory':
         query = query.order_by(User.directory)
 
-    # Search logic
     if search_query:
         query = query.filter(User.username.like(f'%{search_query}%'))  # case insensitive search
 
     return query.all()
 
-
+# for logout button
 @app.route('/logout')
 def logout():
     session.clear()
@@ -122,6 +119,7 @@ def create_user():
     db.session.commit()
     return render_template('create_user.html', show_modal=' ') #TODO: not working yet
 
+# card component in home.html
 @app.route('/api/user_status_counts', methods=['GET'])
 def get_user_status_counts():
     active_users_count = User.query.filter_by(status='Active').count()
@@ -133,6 +131,31 @@ def get_user_status_counts():
         'inactive_users': inactive_users_count,
         'disabled_users': disabled_users_count
     })
+
+# manage user component
+@app.route('/user/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = User.query.get_or_404(user_id)
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'directory': user.directory,
+        'status': user.status
+    })
+
+# for updating user info in manage_user.html
+@app.route('/update_user', methods=['POST'])
+def update_user():
+    user_id = request.form['user_id']
+    user = User.query.get_or_404(user_id)
+    
+    user.username = request.form['username']
+    user.directory = request.form['directory']
+    user.status = request.form['status']
+    
+    db.session.commit()
+    return redirect(url_for('home'))
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

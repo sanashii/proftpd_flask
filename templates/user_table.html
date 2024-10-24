@@ -58,7 +58,7 @@
         <tbody>
             {% if users %}
                 {% for user in users %}
-                <tr>
+                <tr onclick="window.location.href='/user?user_id={{ user.id }}'">
                     <th scope="row">{{ user.id }}</th>
                     <td>{{ user.username }}</td>
                     <td>{{ user.directory }}</td>

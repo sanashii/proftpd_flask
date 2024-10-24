@@ -76,3 +76,22 @@ $(document).ready(function() {
     fetchUserStatusCounts();
 });
 
+$(document).ready(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user_id');
+    if (userId) {
+        $.ajax({
+            url: `/user/${userId}`,
+            type: 'GET',
+            success: function(data) {
+                $('#user-id').val(data.id);
+                $('#username').val(data.username);
+                $('#directory').val(data.directory);
+                $('#status').val(data.status);
+            },
+            error: function() {
+                alert("Error loading user details.");
+            }
+        });
+    }
+});
