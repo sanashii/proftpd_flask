@@ -55,3 +55,24 @@ function updateURLParams(param, value) {
     url.searchParams.set(param, value); 
     window.location.href = url.toString(); 
 }
+
+// for card component
+function fetchUserStatusCounts() {
+    $.ajax({
+        url: '/api/user_status_counts',
+        method: 'GET',
+        success: function(data) {
+            $('#active-users').text(data.active_users);
+            $('#inactive-users').text(data.inactive_users);
+            $('#disabled-users').text(data.disabled_users);
+        },
+        error: function(error) {
+            console.log("Error fetching user status counts", error);
+        }
+    });
+}
+
+$(document).ready(function() {
+    fetchUserStatusCounts();
+});
+

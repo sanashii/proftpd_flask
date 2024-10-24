@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, redirect, session
+from flask import Flask, jsonify, render_template, url_for, request, redirect, session
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -36,7 +36,7 @@ def login():
     return render_template('login.html')
 
 
-@app.route('/password_reset', methods=['GET', 'POST'])
+@app.route('/password_reset', methods=['GET', 'POST']) #! NOTE: to be updated / changed when using the actual trax domain
 def password_reset():
     if request.method == 'POST':
         username = request.form['username']
@@ -58,11 +58,43 @@ def password_reset():
     return render_template('password_reset.html')
 
 
-@app.route('/home')
+@app.route('/home', methods=['GET'])
 def home():
     if not session.get("username"):
         return redirect("/login")
-    return render_template('home.html')
+    
+    sort_by = request.args.get('sort_by', 'id')
+    filter_status = request.args.get('filter_by', 'all')
+    search_query = request.args.get('search', '')
+
+    users = get_filtered_sorted_users(sort_by, filter_status, search_query)
+    return render_template('home.html', users=users)
+
+def get_filtered_sorted_users(sort_by='id', filter_status='all', search_query=''):
+    query = User.query
+
+    # Filtering logic
+    if filter_status == 'active':
+        query = query.filter_by(status='Active')
+    elif filter_status == 'inactive':
+        query = query.filter(User.status.in_(['Inactive', 'Disabled']))
+    elif filter_status == 'all':
+        query = query.filter(User.status.in_(['Active', 'Inactive', 'Disabled']))
+
+    # Sorting logic
+    if sort_by == 'username':
+        query = query.order_by(User.username)
+    elif sort_by == 'id':
+        query = query.order_by(User.id)
+    elif sort_by == 'directory':
+        query = query.order_by(User.directory)
+
+    # Search logic
+    if search_query:
+        query = query.filter(User.username.like(f'%{search_query}%'))  # case insensitive search
+
+    return query.all()
+
 
 @app.route('/logout')
 def logout():
@@ -90,39 +122,17 @@ def create_user():
     db.session.commit()
     return render_template('create_user.html', show_modal=' ') #TODO: not working yet
 
+@app.route('/api/user_status_counts', methods=['GET'])
+def get_user_status_counts():
+    active_users_count = User.query.filter_by(status='Active').count()
+    inactive_users_count = User.query.filter(User.status.in_(['Inactive', 'Disabled'])).count()
+    disabled_users_count = User.query.filter_by(status='Disabled').count()
 
-@app.route('/get_users', methods=['GET', 'POST'])
-def get_users():
-    sort_by = request.args.get('sort_by', 'id')  # default to sorting by ID
-    filter_status = request.args.get('filter_by', 'all')  # default to no filter
-    search_query = request.args.get('search', '')
-    
-    query = User.query
-
-    # filtering logic
-    if filter_status == 'active':
-        query = query.filter_by(status='Active')
-    elif filter_status == 'inactive':
-        query = query.filter(User.status.in_(['Inactive', 'Disabled']))
-    elif filter_status == 'all':
-        query = query.filter(User.status.in_(['Active', 'Inactive', 'Disabled']))
-
-    # sorting logic
-    if sort_by == 'username':
-        query = query.order_by(User.username)
-    elif sort_by == 'id':
-        query = query.order_by(User.id)
-    elif sort_by == 'directory':
-        query = query.order_by(User.directory)
-    
-    
-    # search logic
-    if search_query:
-        query = query.filter(User.username.like(f'%{search_query}%')) # case insensitive search
-    
-    users = query.all() 
-    return render_template('user_table.html', users=users) # renders the user table component
-
+    return jsonify({
+        'active_users': active_users_count,
+        'inactive_users': inactive_users_count,
+        'disabled_users': disabled_users_count
+    })
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
