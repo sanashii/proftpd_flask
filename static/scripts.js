@@ -95,3 +95,24 @@ $(document).ready(function() {
         });
     }
 });
+
+// for manage user component
+document.addEventListener("DOMContentLoaded", () => {
+    const rows = document.querySelectorAll("tr.user-row");
+    rows.forEach((row) => {
+      const userId = row.dataset.userId;
+      row.addEventListener("click", () => goToManageUser(userId));
+    });
+});
+
+function goToManageUser(id) {
+    console.log(`Navigating to user ID: ${id}`);
+    window.location.href = `/manage-user/${id}`;
+}
+
+function loadManageUser(userId) {
+    // Perform an AJAX call to fetch the manage_user component for a specific user
+    $.get(`/user/${userId}`, function(data) {
+        $('#content').html(data);
+    });
+}

@@ -136,12 +136,8 @@ def get_user_status_counts():
 @app.route('/user/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     user = User.query.get_or_404(user_id)
-    return jsonify({
-        'id': user.id,
-        'username': user.username,
-        'directory': user.directory,
-        'status': user.status
-    })
+    return render_template('manage_user.html', user=user)
+
 
 # for updating user info in manage_user.html
 @app.route('/update_user', methods=['POST'])
