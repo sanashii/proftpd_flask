@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage User Component</title>
+    <link rel="stylesheet" href="static/manage-user.css">
     <script src="/static/scripts.js"></script>
 
     <!-- Bootstrap CSS -->
@@ -14,25 +15,32 @@
 </head>
 <body>
     <h2>Manage User</h2>
-    <form id="manage-user-form" method="POST" action="/update_user">
-        <input type="hidden" id="user-id" name="user_id" value="{{ user.id }}">
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" value="{{ user.username }}">
+    <div class="main-container">
+        <div class="manage-user-container">
+            <form id="manage-user-form" method="POST" action="/update_user">
+                <input type="hidden" id="user-id" name="user_id" value="{{ user.id }}">
+                <div class="input-group mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="basic-addon2" id="username" name="username" value="{{ user.username }}">
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="basic-addon2">@example.com</span>
+                      </div>
+                </div>
+                <div>
+                    <label for="directory">Directory:</label>
+                    <input type="text" id="directory" name="directory" value="{{ user.directory }}">
+                </div>
+                <div>
+                    <label for="status">Status:</label>
+                    <select id="status" name="status">
+                        <option value="Active" {% if user.status == 'Active' %}selected{% endif %}>Active</option>
+                        <option value="Inactive" {% if user.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                        <option value="Disabled" {% if user.status == 'Disabled' %}selected{% endif %}>Disabled</option>
+                    </select>
+                </div>
+                <button type="submit">Save</button>
+            </form>
         </div>
-        <div>
-            <label for="directory">Directory:</label>
-            <input type="text" id="directory" name="directory" value="{{ user.directory }}">
-        </div>
-        <div>
-            <label for="status">Status:</label>
-            <select id="status" name="status">
-                <option value="Active" {% if user.status == 'Active' %}selected{% endif %}>Active</option>
-                <option value="Inactive" {% if user.status == 'Inactive' %}selected{% endif %}>Inactive</option>
-                <option value="Disabled" {% if user.status == 'Disabled' %}selected{% endif %}>Disabled</option>
-            </select>
-        </div>
-        <button type="submit">Save</button>
-    </form>
+    </div>
 </body>
 </html>
