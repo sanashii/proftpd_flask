@@ -21,7 +21,7 @@
                 <input type="hidden" id="user-id" name="user_id" value="{{ user.id }}">
                 <div class="input-group mb-3">
                     <label for="username">Username</label>
-                    <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="basic-addon2" id="username" name="username" value="{{ user.username }}">
+                    <input type="text" class="form-control" placeholder="{{ user.username }}" aria-label="Username" aria-describedby="basic-addon2" id="username" name="username" value="{{ user.username }}">
                     <div class="input-group-append">
                         <span class="input-group-text" id="basic-addon2">@example.com</span>
                       </div>
@@ -32,13 +32,12 @@
                     <input type="text" id="directory" name="directory" value="{{ user.directory }}">
                 </div>
 
+                <!--NOTE: may be revised-->
                 <div class="input-group mb-3">
-                    <label for="username">Username</label>
-                    <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="basic-addon2" id="username" name="username" value="{{ user.username }}">
-                    <div class="input-group-append">
-                        <span class="input-group-text" id="basic-addon2">@example.com</span>
-                      </div>
+                    <label for="username">Password</label>
+                    <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="basic-addon2" id="password" name="password" value="{{ user.username }}">
                 </div>
+                
                 <div>
                     <label for="status">Status:</label>
                     <select id="status" name="status">
@@ -47,6 +46,7 @@
                         <option value="Disabled" {% if user.status == 'Disabled' %}selected{% endif %}>Disabled</option>
                     </select>
                 </div>
+                <button type="submit">Cancel</button>
                 <button type="submit">Save</button>
             </form>
         </div>
