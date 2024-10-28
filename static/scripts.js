@@ -16,6 +16,13 @@ $(document).ready(function() {
         const userId = $(this).data('user-id');
         loadManageUser(userId);
     });
+
+    // Check if there's a user_id in the URL and load the manage user content
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user_id');
+    if (userId) {
+        loadManageUser(userId);
+    }
 });
 
 function loadHome() {
@@ -35,7 +42,7 @@ function loadManageUsers() {
 }
 
 function loadManageUser(userId) {
-    // Change the URL to /user/<user_id>
+    // Change the URL to /manage_user/<user_id>
     history.pushState(null, '', `/manage_user/${userId}`);
     // Perform an AJAX call to fetch the manage_user component for a specific user
     fetch(`/manage_user/${userId}`)

@@ -14,6 +14,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 </head>
 <body>
+    {% block content %}
     <h2>Manage User</h2>
     <div class="main-container">
         <div class="manage-user-container">
@@ -51,5 +52,6 @@
             </form>
         </div>
     </div>
+    {% endblock %}
 </body>
 </html>

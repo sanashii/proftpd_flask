@@ -68,7 +68,7 @@ def home():
     search_query = request.args.get('search', '')
 
     users = get_filtered_sorted_users(sort_by, filter_status, search_query)
-    return render_template('home.html', users=users)
+    return render_template('index.html', users=users, content_template='home.html')
 
 def get_filtered_sorted_users(sort_by='id', filter_status='all', search_query=''):
     query = User.query
@@ -119,7 +119,7 @@ def create_user():
     db.session.commit()
     return render_template('create_user.html', show_modal=' ') #TODO: not working yet
 
-# card component in home.html
+# card component for home.html
 @app.route('/api/user_status_counts', methods=['GET'])
 def get_user_status_counts():
     active_users_count = User.query.filter_by(status='Active').count()
@@ -136,7 +136,7 @@ def get_user_status_counts():
 @app.route('/manage_user/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     user = User.query.get_or_404(user_id)
-    return render_template('manage_user.html', user=user)
+    return render_template('index.html', user=user, content_template='manage_user.html')
 
 
 # for updating user info in manage_user.html
