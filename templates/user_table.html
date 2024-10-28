@@ -17,7 +17,6 @@
     <nav class="navbar navbar-light bg-light justify-content-between mt-4">
         <a class="navbar-brand ms-3">List of Users</a>
         <form class="form-inline d-flex align-items-center">
-            <!--TODO: add search logic-->
             <div class="dropdown me-3">
                 <button class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" type="button" id="sortDropdown" aria-expanded="false">
                     Sort by
@@ -56,14 +55,20 @@
           </tr>
         </thead>
         <tbody>
-          {% for user in users %}
-          <tr onclick="loadManageUser('{{ user.id }}')" style="cursor: pointer;">
-            <td>{{ user.id }}</td>
-            <td>{{ user.username }}</td>
-            <td>{{ user.directory }}</td>
-            <td>{{ user.status }}</td>
-          </tr>
-          {% endfor %}
+            {% if users|length == 0 %}
+                <tr>
+                    <td colspan="4" class="text-center">No user found</td>
+                </tr>
+            {% else %}
+                {% for user in users %}
+                <tr onclick="loadManageUser('{{ user.id }}')" style="cursor: pointer;">
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.directory }}</td>
+                    <td>{{ user.status }}</td>
+                </tr>
+                {% endfor %}
+            {% endif %}
         </tbody>
     </table>
 </body>
