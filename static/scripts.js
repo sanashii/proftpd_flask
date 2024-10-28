@@ -1,28 +1,52 @@
 $(document).ready(function() {
     // Handle 'Manage Users' click event
-    $('#users-link').click(function(e) {
+    $('#manage-users-link').click(function(e) {
         e.preventDefault();
-        // Make an AJAX request to get the user table
-        $.ajax({
-            url: '/users', // This should map to your Flask route
-            type: 'GET',
-            success: function(data) {
-                // Update content area with user table
-                $('#content-area').html(data);
-            },
-            error: function() {
-                alert("Error loading users.");
-            }
-        });
+        loadManageUsers();
     });
 
     // Handle 'Home' click event
     $('#home-link').click(function(e) {
         e.preventDefault();
-        // Reload initial home content
-        $('#content-area').html('<h1>Welcome to MyApp</h1><p>Use the navigation to manage users or go back to home.</p>');
+        loadHome();
+    });
+
+    // Handle user row click event
+    $(document).on('click', 'tr.user-row', function() {
+        const userId = $(this).data('user-id');
+        loadManageUser(userId);
     });
 });
+
+function loadHome() {
+    fetch('/home')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('content').innerHTML = data;
+        });
+}
+
+function loadManageUsers() {
+    fetch('/manage_user')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('content').innerHTML = data;
+        });
+}
+
+function loadManageUser(userId) {
+    // Change the URL to /user/<user_id>
+    history.pushState(null, '', `/manage_user/${userId}`);
+    // Perform an AJAX call to fetch the manage_user component for a specific user
+    fetch(`/manage_user/${userId}`)
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('content').innerHTML = data;
+        })
+        .catch(error => {
+            console.error('Error loading user details:', error);
+        });
+}
 
 function logout() {
     window.location.href = "/";
@@ -96,23 +120,23 @@ $(document).ready(function() {
     }
 });
 
-// for manage user component
-document.addEventListener("DOMContentLoaded", () => {
-    const rows = document.querySelectorAll("tr.user-row");
-    rows.forEach((row) => {
-      const userId = row.dataset.userId;
-      row.addEventListener("click", () => goToManageUser(userId));
-    });
-});
+// // for manage user component
+// document.addEventListener("DOMContentLoaded", () => {
+//     const rows = document.querySelectorAll("tr.user-row");
+//     rows.forEach((row) => {
+//       const userId = row.dataset.userId;
+//       row.addEventListener("click", () => goToManageUser(userId));
+//     });
+// });
 
-function goToManageUser(id) {
-    console.log(`Navigating to user ID: ${id}`);
-    window.location.href = `/manage-user/${id}`;
-}
+// function goToManageUser(id) {
+//     console.log(`Navigating to user ID: ${id}`);
+//     window.location.href = `/manage-user/${id}`;
+// }
 
-function loadManageUser(userId) {
-    // Perform an AJAX call to fetch the manage_user component for a specific user
-    $.get(`/user/${userId}`, function(data) {
-        $('#content').html(data);
-    });
-}
+// function loadManageUser(userId) {
+//     // Perform an AJAX call to fetch the manage_user component for a specific user
+//     $.get(`/user/${userId}`, function(data) {
+//         $('#content').html(data);
+//     });
+// }

@@ -123,7 +123,7 @@ def create_user():
 @app.route('/api/user_status_counts', methods=['GET'])
 def get_user_status_counts():
     active_users_count = User.query.filter_by(status='Active').count()
-    inactive_users_count = User.query.filter(User.status.in_(['Inactive', 'Disabled'])).count()
+    inactive_users_count = User.query.filter(User.status.in_(['Inactive'])).count()
     disabled_users_count = User.query.filter_by(status='Disabled').count()
 
     return jsonify({
@@ -133,7 +133,7 @@ def get_user_status_counts():
     })
 
 # manage user component
-@app.route('/user/<int:user_id>', methods=['GET'])
+@app.route('/manage_user/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('manage_user.html', user=user)

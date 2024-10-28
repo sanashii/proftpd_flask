@@ -23,9 +23,9 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
           <div class="navbar-nav">
-            <a class="nav-item nav-link active" href="#" onclick="loadHome()">Home<span class="sr-only"></span></a>
-            <a class="nav-item nav-link" href="#" onclick="loadManageUser()">Manage Users</a>
-            <a class="nav-item nav-link" href="#" onclick="loadCreateUser()">Create User</a>
+            <a class="nav-item nav-link active" href="#">Home<span class="sr-only"></span></a>
+            <a class="nav-item nav-link" href="#">Manage Users</a>
+            <a class="nav-item nav-link" href="#">Create User</a>
           </div>
         </div>
         <!-- for logout button -->
@@ -38,8 +38,8 @@
 
     <!-- Main Content Area -->
     <section id="content" class="content-section">
-        <h2>Users</h2>
         <div class="container" method="GET" action="/home">
+          <h2>Users</h2>
           {% include 'card_component.html' %}
           {% include 'user_table.html' %}
         </div>
