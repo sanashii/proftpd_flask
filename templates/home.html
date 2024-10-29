@@ -16,12 +16,17 @@
 
 </head>
 <body>
-    {% extends 'index.html' %}
+    {% extends "index.html" %}
+
     {% block content %}
-    <div method="GET" action="/home">
+    <div class="container">
         <h2>Users</h2>
+        
         {% include 'card_component.html' %}
-        {% include 'user_table.html' %}
+        
+        <div class="table-responsive">
+            {% include 'user_table.html' %}
+        </div>
     </div>
     {% endblock %}
 </body>

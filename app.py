@@ -68,7 +68,7 @@ def home():
     search_query = request.args.get('search', '')
 
     users = get_filtered_sorted_users(sort_by, filter_status, search_query)
-    return render_template('index.html', users=users, content_template='home.html')
+    return render_template('home.html', users=users)
 
 def get_filtered_sorted_users(sort_by='id', filter_status='all', search_query=''):
     query = User.query
@@ -134,23 +134,41 @@ def get_user_status_counts():
 
 # manage user component
 @app.route('/manage_user/<int:user_id>', methods=['GET'])
-def get_user(user_id):
+def manage_user(user_id):
+    if not session.get("username"):
+        return redirect("/login")
+    
     user = User.query.get_or_404(user_id)
-    return render_template('index.html', user=user, content_template='manage_user.html')
-
+    return render_template('manage_user.html', user=user) 
 
 # for updating user info in manage_user.html
+# app.py - Update the update_user route
+
 @app.route('/update_user', methods=['POST'])
 def update_user():
-    user_id = request.form['user_id']
+    if not session.get("username"):
+        return redirect("/login")
+        
+    user_id = request.form.get('user_id')
     user = User.query.get_or_404(user_id)
     
-    user.username = request.form['username']
-    user.directory = request.form['directory']
-    user.status = request.form['status']
+    user.username = request.form.get('username')
+    user.directory = request.form.get('directory')
+    user.status = request.form.get('status')
     
-    db.session.commit()
-    return redirect(url_for('home'))
+    # Only update password if a new one is provided
+    new_password = request.form.get('password')
+    if new_password and new_password.strip():
+        user.password = new_password  # In production, make sure to hash the password
+    
+    try:
+        db.session.commit()
+        # You might want to add a flash message here for success
+        return redirect(url_for('home'))
+    except Exception as e:
+        db.session.rollback()
+        # You might want to add error handling here
+        return redirect(url_for('manage_user', user_id=user_id))
 
 
 class User(db.Model):

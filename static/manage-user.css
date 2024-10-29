@@ -9,7 +9,7 @@
     flex-direction: column;
 }
 
-.manage-user-container {
+.manage-user-container{
     column-count: 2;
     background-color: #f4f4f4;
     padding: 35px;
