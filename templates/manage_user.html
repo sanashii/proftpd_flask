@@ -14,10 +14,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 </head>
 <body>
-
-    
-    {% block content %}
-
     <div class="container">
         <h2>Manage User</h2>
 
@@ -36,30 +32,24 @@
 
                     <div class="input-group mb-3">
                         <label for="directory" class="form-label">Directory</label>
-                        <input type="text" class="form-control" id="directory" name="directory" value="{{ user.directory }}" required>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="directory" name="directory" value="{{ user.directory }}" required>
+                        </div>
                     </div>
 
                     <div class="input-group mb-3">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Leave blank to keep current password">
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Leave blank to keep current password">
+                        </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Status</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="status" id="status-active" value="Active" 
-                                {% if user.status == 'Active' %}checked{% endif %}>
-                            <label class="form-check-label" for="status-active">Active</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="status" id="status-inactive" value="Inactive"
-                                {% if user.status == 'Inactive' %}checked{% endif %}>
-                            <label class="form-check-label" for="status-inactive">Inactive</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="status" id="status-disabled" value="Disabled"
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="status-switch" name="status_switch" value="Disabled"
                                 {% if user.status == 'Disabled' %}checked{% endif %}>
-                            <label class="form-check-label" for="status-disabled">Disabled</label>
+                            <label class="form-check-label" for="status-switch">Disable user</label>
                         </div>
                     </div>
 
@@ -71,7 +61,5 @@
             </div>
         </div>
     </div>
-
-    {% endblock %}
 </body>
 </html>

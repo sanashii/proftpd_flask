@@ -37,9 +37,15 @@
     </nav>
 
     <!-- Main Content Area -->
-    <section id="content" class="section content-section">
+    <section id="content" class="content-section">
       <div class="container">
-        {% block content %}{% endblock %}
+        {% block content %}
+          {% if component_template %}
+              {% include component_template %}
+          {% else %}
+              <!-- Default home page content or other fallback content -->
+          {% endif %}
+        {% endblock %}
       </div>
     </section>
 </body>

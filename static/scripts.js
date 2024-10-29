@@ -2,7 +2,8 @@ $(document).ready(function() {
     // Handle 'Manage Users' click event
     $('#manage-users-link').click(function(e) {
         e.preventDefault();
-        loadManageUsers();
+        // loadManageUsers();
+        loadManageUser();
     });
 
     // Handle 'Home' click event
@@ -33,18 +34,20 @@ function loadHome() {
         });
 }
 
-function loadManageUsers() {
-    fetch('/manage_user')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('content').innerHTML = data;
-        });
-}
+// function loadManageUsers() {
+//     fetch('/manage_user')
+//         .then(response => response.text())
+//         .then(data => {
+//             document.getElementById('content').innerHTML = data;
+//         });
+// }
 
 function loadManageUser(userId) {
-    // Change the URL to /manage_user/<user_id>
-    history.pushState(null, '', `/manage_user/${userId}`);
-    // Perform an AJAX call to fetch the manage_user component for a specific user
+    // Check if we're already in the manage_user context to avoid redundant push states
+    if (window.location.pathname !== `/manage_user/${userId}`) {
+        history.pushState(null, '', `/manage_user/${userId}`);
+    }
+    
     fetch(`/manage_user/${userId}`)
         .then(response => response.text())
         .then(data => {
