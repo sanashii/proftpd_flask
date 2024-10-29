@@ -43,11 +43,10 @@ function loadHome() {
 // }
 
 function loadManageUser(userId) {
-    // Check if we're already in the manage_user context to avoid redundant push states
-    if (window.location.pathname !== `/manage_user/${userId}`) {
-        history.pushState(null, '', `/manage_user/${userId}`);
-    }
-    
+    // Update the URL without reloading the full page
+    history.pushState(null, '', `/manage_user/${userId}`);
+
+    // Fetch and load only the manage_user content (no navigation bar)
     fetch(`/manage_user/${userId}`)
         .then(response => response.text())
         .then(data => {
@@ -57,6 +56,7 @@ function loadManageUser(userId) {
             console.error('Error loading user details:', error);
         });
 }
+
 
 function logout() {
     window.location.href = "/";

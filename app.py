@@ -133,16 +133,15 @@ def get_user_status_counts():
     })
 
 # manage user component
-@app.route('/manage_user_full/<int:user_id>')
-def manage_user_full(user_id):
-    # Render manage_user with the full layout (like the navigation bar)
+@app.route('/manage_user/<int:user_id>', methods=['GET'])
+def manage_user(user_id):
+    if not session.get("username"):
+        return redirect("/login")
+    
     user = User.query.get_or_404(user_id)
-    return render_template('index.html', user=user, component_template='manage_user.html')
-
+    return render_template('manage_user.html', user=user) 
 
 # for updating user info in manage_user.html
-# app.py - Update the update_user route
-
 @app.route('/update_user', methods=['POST'])
 def update_user():
     if not session.get("username"):
@@ -158,7 +157,7 @@ def update_user():
     if 'status_switch' in request.form:
         user.status = 'Disabled'
     else:
-        user.status = request.form.get('status')
+        user.status = 'Active'  # Set to Active if the switch is unchecked
     
     # Only update password if a new one is provided
     new_password = request.form.get('password')
