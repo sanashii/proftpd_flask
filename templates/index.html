@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>ProFTPD Main Page</title>
-    <link rel="stylesheet" href="static/home.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='manage-user.css') }}">
     <script src="/static/scripts.js"></script>
     <script>$('.dropdown-toggle').dropdown()</script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
