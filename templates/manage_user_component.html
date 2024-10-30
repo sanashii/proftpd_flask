@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage User Component</title>
-    <!-- <link rel="stylesheet" href="static/manage-user.css"> -->
+    <link rel="stylesheet" href="static/manage-user.css">
     <script src="/static/scripts.js"></script>
 
     <!-- Bootstrap CSS -->
@@ -19,11 +19,58 @@
                 <form action="{{ url_for('update_user') }}" method="POST">
                     <input type="hidden" name="user_id" value="{{ user.id }}">
                     <div class="first-column">
-                        
+                        <div class="input-group mb-3">
+                            <label for="login_count" class="form-label">Login count</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="login_count" name="login count" value="{{ user.login_count }}" disabled>
+                            </div>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <label for="last_login" class="form-label">Last login</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="last_login" name="last login" value="{{ user.last_login }}" disabled>
+                            </div>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <label for="last_modified" class="form-label">Last modified</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="last_modified" name="last modified" value="{{ user.last_modified }}" disabled>
+                            </div>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <label for="bytes_uploaded" class="form-label">Bytes uploaded</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="bytes_uploaded" name="bytes uploaded" value="{{ user.bytes_uploaded }}" disabled>
+                            </div>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <label for="bytes_downloaded class="form-label">Bytes downloaded</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="bytes_downloaded" name="bytes downloaded" value="{{ user.bytes_downloaded }}" disabled>
+                            </div>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <label for="files_uploaded" class="form-label">Files uploaded</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="files_uploaded" name="files uploaded" value="{{ user.files_uploaded }}" disabled>
+                            </div>
+                        </div>
                     </div>
 
 
                     <div class="second-column">
+                        <div class="input-group mb-3">
+                            <label for="files_downloaded" class="form-label">Files downloaded</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="files_downloaded" name="files downloaded" value="{{ user.files_downloaded }}" disabled>
+                            </div>
+                        </div>
+
                         <div class="input-group mb-3">
                             <label for="username" class="form-label">Username</label>
                             <div class="input-group">
