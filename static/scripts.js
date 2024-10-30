@@ -2,7 +2,6 @@ $(document).ready(function() {
     // Handle 'Manage Users' click event
     $('#manage-users-link').click(function(e) {
         e.preventDefault();
-        // loadManageUsers();
         loadManageUser();
     });
 
@@ -33,14 +32,6 @@ function loadHome() {
             document.getElementById('content').innerHTML = data;
         });
 }
-
-// function loadManageUsers() {
-//     fetch('/manage_user')
-//         .then(response => response.text())
-//         .then(data => {
-//             document.getElementById('content').innerHTML = data;
-//         });
-// }
 
 function loadManageUser(userId) {
     // Update the URL without reloading the full page

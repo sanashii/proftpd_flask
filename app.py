@@ -70,6 +70,15 @@ def home():
     users = get_filtered_sorted_users(sort_by, filter_status, search_query)
     return render_template('home.html', users=users)
 
+# manage user component
+@app.route('/manage_user/<int:user_id>', methods=['GET'])
+def manage_user(user_id):
+    if not session.get("username"):
+        return redirect("/login")
+    
+    user = User.query.get_or_404(user_id)
+    return render_template('manage_user.html', user=user) 
+
 def get_filtered_sorted_users(sort_by='id', filter_status='all', search_query=''):
     query = User.query
 
@@ -131,15 +140,6 @@ def get_user_status_counts():
         'inactive_users': inactive_users_count,
         'disabled_users': disabled_users_count
     })
-
-# manage user component
-@app.route('/manage_user/<int:user_id>', methods=['GET'])
-def manage_user(user_id):
-    if not session.get("username"):
-        return redirect("/login")
-    
-    user = User.query.get_or_404(user_id)
-    return render_template('manage_user.html', user=user) 
 
 # for updating user info in manage_user.html
 @app.route('/update_user', methods=['POST'])

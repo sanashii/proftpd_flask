@@ -23,7 +23,7 @@
       <div id="navbarNavAltMarkup" class="collapse navbar-collapse">
         <div class="navbar-nav">
             <a href="{{ url_for('home') }}" class="nav-item nav-link {% if request.endpoint == 'home' %}active{% endif %}">Home</a>
-            <a href="#" class="nav-item nav-link">Manage Users</a>
+            <a class="nav-item nav-link {% if request.endpoint == 'manage_user' %}active{% endif %}">Manage Users</a>
             <a href="#" class="nav-item nav-link">Create User</a>
         </div>
       </div>
@@ -40,11 +40,6 @@
     <section id="content" class="content-section">
       <div class="container">
         {% block content %}
-          {% if component_template %}
-              {% include component_template %}
-          {% else %}
-              <!-- Default home page content or other fallback content -->
-          {% endif %}
         {% endblock %}
       </div>
     </section>
