@@ -11,6 +11,12 @@ $(document).ready(function() {
         loadManageUser();
     });
 
+    // Handle 'Create Users' click event
+    $('#create-users-link').click(function(e) {
+        e.preventDefault();
+        loadCreateUser();
+    });
+
     // Handle 'Home' click event
     $('#home-link').click(function(e) {
         e.preventDefault();
@@ -61,6 +67,17 @@ $(document).ready(function() {
 
 function loadHome() {
     fetch('/home')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('content').innerHTML = data;
+        });
+}
+
+function loadCreateUser() {
+    // Update the URL without reloading the full page
+    history.pushState(null, '', `/create_user`);
+
+    fetch('/create_user')
         .then(response => response.text())
         .then(data => {
             document.getElementById('content').innerHTML = data;

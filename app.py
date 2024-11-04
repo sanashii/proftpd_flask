@@ -3,6 +3,7 @@ from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy.sql import func
+from datetime import datetime
 import os
 
 app = Flask(__name__)
@@ -20,20 +21,19 @@ migrate = Migrate(app, db)
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        
-        session["username"] = request.form.get("username")
-        
-        if username not in users:
-            return render_template('login.html', show_modal='user_not_found')
-        elif users[username] != password:
-            return render_template('login.html', show_modal='incorrect_password')
-        else:
-            return redirect(url_for('home'))
+    # Clear any existing session data
+    session.clear()
     
-    return render_template('login.html')
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        
+        if username == "admin" and password == "admin":
+            session["username"] = "admin"
+            return redirect(url_for('home'))
+        return render_template("login.html", show_modal='incorrect_password')
+    
+    return render_template("login.html")
 
 
 @app.route('/password_reset', methods=['GET', 'POST']) #! NOTE: to be updated / changed when using the actual trax domain
@@ -105,15 +105,38 @@ def get_filtered_sorted_users(sort_by='id', filter_status='all', search_query=''
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect("/login")
+    return redirect(url_for('login'))
 
-@app.route('/create_user', methods=['POST'])
+@app.route('/create_user', methods=['GET', 'POST'])
 def create_user():
-    new_user = User(username='johndoe', password='securepassword', directory='/mnt/ftp/test', status='Active') # TODO: will be filled and passed through the inputs sa frontend
-    
-    db.session.add(new_user)
-    db.session.commit()
-    return render_template('create_user.html', show_modal=' ') #TODO: not working yet
+    if request.method == 'POST':
+        try:
+            new_user = User(
+                username=request.form.get('username'),
+                password=request.form.get('password'),
+                directory=request.form.get('directory'),
+                status=request.form.get('status'),
+                login_count=0,
+                bytes_uploaded=0,
+                bytes_downloaded=0,
+                files_uploaded=0,
+                files_downloaded=0
+                # last_modified will be set automatically
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            return render_template('create_user.html', 
+                                show_modal='success', 
+                                success_message='User created successfully',
+                                success_redirect=url_for('home'),
+                                success_button_text='Back to Home')
+        except Exception as e:
+            db.session.rollback()
+            return render_template('create_user.html', 
+                                show_modal='error', 
+                                error_message='Error creating user')
+
+    return render_template('create_user.html')
 
 # card component for home.html
 @app.route('/api/user_status_counts', methods=['GET'])
@@ -140,24 +163,23 @@ def update_user():
     user.username = request.form.get('username')
     user.directory = request.form.get('directory')
     
-    # Check the status switch
+    # Status switch handling
     if 'status_switch' in request.form:
         user.status = 'Disabled'
     else:
-        user.status = 'Active'  # Set to Active if the switch is unchecked
+        user.status = 'Active'
     
-    # Only update password if a new one is provided
+    # Password update
     new_password = request.form.get('password')
     if new_password and new_password.strip():
-        user.password = new_password  # In production, make sure to hash the password
+        user.password = new_password
     
+    # last_modified will update automatically due to onupdate
     try:
         db.session.commit()
-        # You might want to add a flash message here for success
         return redirect(url_for('home'))
     except Exception as e:
         db.session.rollback()
-        # You might want to add error handling here
         return redirect(url_for('manage_user', user_id=user_id))
 
 # for deleting user in manage_user.html
@@ -189,6 +211,15 @@ class User(db.Model):
     password = db.Column(db.String(120), nullable=False)
     directory = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(10), nullable=False)
+    
+    # New fields
+    login_count = db.Column(db.Integer, default=0)
+    last_login = db.Column(db.DateTime, nullable=True)
+    last_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    bytes_uploaded = db.Column(db.BigInteger, default=0)
+    bytes_downloaded = db.Column(db.BigInteger, default=0)
+    files_uploaded = db.Column(db.Integer, default=0)
+    files_downloaded = db.Column(db.Integer, default=0)
 
     def __repr__(self):
         return f'<User {self.username}>'

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create User Component</title>
+</head>
+<body data-show-modal="{{ show_modal if show_modal else '' }}">
+    <div class="main-container">
+        <div class="create-user-container">
+            <form action="{{ url_for('create_user') }}" method="POST" onsubmit="return validateForm()">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <span class="input-group-text" id="basic-addon2">@example.com</span>
+                    </div>
+                </div>
+    
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+    
+                <div class="mb-3">
+                    <label for="confirm-password" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirm-password" name="confirm_password" required>
+                </div>
+    
+                <div class="mb-3">
+                    <label for="directory" class="form-label">Directory</label>
+                    <input type="text" class="form-control" id="directory" name="directory" required>
+                </div>
+    
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status" required>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Disabled">Disabled</option>
+                    </select>
+                </div>
+    
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/home'">Cancel</button>
+                    <button type="submit" class="btn create-user-btn">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% include 'modals.html' %}
+    
+</body>
+</html>
