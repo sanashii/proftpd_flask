@@ -115,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
     var userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
     var incorrectPasswordModal = new bootstrap.Modal(document.getElementById('incorrectPasswordModal'));
+    var deleteUserModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
     
     if (document.body.dataset.showModal === 'success') {
         successModal.show();
@@ -124,6 +125,8 @@ document.addEventListener('DOMContentLoaded', function() {
         userNotFoundModal.show();
     } else if (document.body.dataset.showModal === 'incorrect_password') {
         incorrectPasswordModal.show();
+    } else if (document.body.dataset.showModal === 'delete_user') {
+        deleteUserModal.show();
     }
 });
 </script>

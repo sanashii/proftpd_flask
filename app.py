@@ -14,7 +14,7 @@ app.config['SECRET_KEY'] = 'smiskisecretkey1738dummydingdong'
 
 Session(app)
 db = SQLAlchemy(app)
-users = {"admin": "admin"} # dummy acc for admin -- in actuality, ppl with the @traxtech.com domain can access this
+users = {"admin": "admin"} # dummy acc for admin -- in actuality, ppl with the @traxtech.com domain can access this [to implement: LDAP]
 
 migrate = Migrate(app, db)
 
@@ -170,10 +170,18 @@ def delete_user(user_id):
     try:
         db.session.delete(user)
         db.session.commit()
-        return jsonify({'success': True, 'message': 'User deleted successfully'})
+        return jsonify({
+            'success': True, 
+            'message': 'User deleted successfully',
+            'show_modal': 'success'
+        })
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': 'Error deleting user'})
+        return jsonify({
+            'success': False, 
+            'message': 'Error deleting user',
+            'show_modal': 'error'
+        })
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

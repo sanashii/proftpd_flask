@@ -1,4 +1,10 @@
 $(document).ready(function() {
+    // for toggling the dropdown menu in user_table
+    var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+    dropdownElementList.map(function (dropdownToggleEl) {
+        return new bootstrap.Dropdown(dropdownToggleEl);
+    });
+    
     // Handle 'Manage Users' click event
     $('#manage-users-link').click(function(e) {
         e.preventDefault();
@@ -24,21 +30,30 @@ $(document).ready(function() {
         loadManageUser(userId);
     }
 
-    // Handle delete user confirmation
+    // Handle delete button click
+    $('#deleteUserBtn').click(function() {
+        var deleteUserModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
+        deleteUserModal.show();
+    });
+
+    // Handle delete confirmation
     $('#confirmDeleteUser').click(function() {
         const userId = $('input[name="user_id"]').val();
         $.ajax({
             url: `/delete_user/${userId}`,
             type: 'POST',
             success: function(response) {
+                deleteUserModal.hide();
                 if (response.success) {
+                    document.body.dataset.showModal = 'success';
                     window.location.href = '/home';
                 } else {
-                    alert(response.message);
+                    document.body.dataset.showModal = 'error';
                 }
             },
             error: function(xhr, status, error) {
-                alert('Error deleting user: ' + xhr.responseText);
+                deleteUserModal.hide();
+                document.body.dataset.showModal = 'error';
             }
         });
     });
@@ -95,8 +110,17 @@ function validateForm() {
 
 function updateURLParams(param, value) {
     const url = new URL(window.location);
-    url.searchParams.set(param, value); 
-    window.location.href = url.toString(); 
+    url.searchParams.set(param, value);
+    
+    // Preserve existing parameters
+    const existingParams = new URLSearchParams(window.location.search);
+    for (const [key, val] of existingParams) {
+        if (key !== param) {
+            url.searchParams.set(key, val);
+        }
+    }
+    
+    window.location.href = url.toString();
 }
 
 // for card component
