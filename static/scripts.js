@@ -23,6 +23,25 @@ $(document).ready(function() {
     if (userId) {
         loadManageUser(userId);
     }
+
+    // Handle delete user confirmation
+    $('#confirmDeleteUser').click(function() {
+        const userId = $('input[name="user_id"]').val();
+        $.ajax({
+            url: `/delete_user/${userId}`,
+            type: 'POST',
+            success: function(response) {
+                if (response.success) {
+                    window.location.href = '/home';
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error deleting user: ' + xhr.responseText);
+            }
+        });
+    });
 });
 
 function loadHome() {
@@ -47,7 +66,6 @@ function loadManageUser(userId) {
             console.error('Error loading user details:', error);
         });
 }
-
 
 function logout() {
     window.location.href = "/";
@@ -120,24 +138,3 @@ $(document).ready(function() {
         });
     }
 });
-
-// // for manage user component
-// document.addEventListener("DOMContentLoaded", () => {
-//     const rows = document.querySelectorAll("tr.user-row");
-//     rows.forEach((row) => {
-//       const userId = row.dataset.userId;
-//       row.addEventListener("click", () => goToManageUser(userId));
-//     });
-// });
-
-// function goToManageUser(id) {
-//     console.log(`Navigating to user ID: ${id}`);
-//     window.location.href = `/manage-user/${id}`;
-// }
-
-// function loadManageUser(userId) {
-//     // Perform an AJAX call to fetch the manage_user component for a specific user
-//     $.get(`/user/${userId}`, function(data) {
-//         $('#content').html(data);
-//     });
-// }

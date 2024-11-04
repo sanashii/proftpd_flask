@@ -107,19 +107,6 @@ def logout():
     session.clear()
     return redirect("/login")
 
-# sample data
-@app.route('/populate_test_data')
-def populate_test_data():
-    user4 = User(id=105483, username='user111', password='user111', directory='/mnt/ftp/test1', status='Inactive')
-    user5 = User(id=119003, username='name1234', password='name1234', directory='/mnt/ftp/test2', status='Inactive')
-    user6 = User(id=101223, username='user85', password='user85', directory='/mnt/ftp/test7', status='Disabled')
-    
-    db.session.add_all([user4, user5, user6])
-    db.session.commit()
-    
-    return 'Test users added to database!'
-
-
 @app.route('/create_user', methods=['POST'])
 def create_user():
     new_user = User(username='johndoe', password='securepassword', directory='/mnt/ftp/test', status='Active') # TODO: will be filled and passed through the inputs sa frontend
@@ -173,6 +160,20 @@ def update_user():
         # You might want to add error handling here
         return redirect(url_for('manage_user', user_id=user_id))
 
+# for deleting user in manage_user.html
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    if not session.get("username"):
+        return redirect("/login")
+    
+    user = User.query.get_or_404(user_id)
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'User deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Error deleting user'})
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

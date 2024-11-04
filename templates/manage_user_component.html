@@ -18,99 +18,107 @@
             <div class="manage-user-container">
                 <form action="{{ url_for('update_user') }}" method="POST">
                     <input type="hidden" name="user_id" value="{{ user.id }}">
-                    <div class="first-column">
-                        <div class="input-group mb-3">
-                            <label for="login_count" class="form-label">Login count</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="login_count" name="login count" value="{{ user.login_count }}" disabled>
+                    <div class="row">
+                        <!-- first column -->
+                        <div class="col-md-6">
+                            <div class="input-group mb-3">
+                                <label for="login_count" class="form-label">Login count</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="login_count" name="login count" value="{{ user.login_count }}" disabled>
+                                </div>
+                            </div>
+    
+                            <div class="input-group mb-3">
+                                <label for="last_login" class="form-label">Last login</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="last_login" name="last login" value="{{ user.last_login }}" disabled>
+                                </div>
+                            </div>
+    
+                            <div class="input-group mb-3">
+                                <label for="last_modified" class="form-label">Last modified</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="last_modified" name="last modified" value="{{ user.last_modified }}" disabled>
+                                </div>
+                            </div>
+    
+                            <div class="input-group mb-3">
+                                <label for="bytes_uploaded" class="form-label">Bytes uploaded</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="bytes_uploaded" name="bytes uploaded" value="{{ user.bytes_uploaded }}" disabled>
+                                </div>
+                            </div>
+    
+                            <div class="input-group mb-3">
+                                <label for="bytes_downloaded" class="form-label">Bytes downloaded</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="bytes_downloaded" name="bytes downloaded" value="{{ user.bytes_downloaded }}" disabled>
+                                </div>
+                            </div>
+    
+                            <div class="input-group mb-3">
+                                <label for="files_uploaded" class="form-label">Files uploaded</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="files_uploaded" name="files uploaded" value="{{ user.files_uploaded }}" disabled>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="input-group mb-3">
-                            <label for="last_login" class="form-label">Last login</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="last_login" name="last login" value="{{ user.last_login }}" disabled>
+    
+                        <!-- second column -->
+                        <div class="col-md-6">
+                            <div class="input-group mb-3">
+                                <label for="files_downloaded" class="form-label">Files downloaded</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="files_downloaded" name="files downloaded" value="{{ user.files_downloaded }}" disabled>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="input-group mb-3">
-                            <label for="last_modified" class="form-label">Last modified</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="last_modified" name="last modified" value="{{ user.last_modified }}" disabled>
+    
+                            <div class="input-group mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                                    <span class="input-group-text" id="basic-addon2">@example.com</span>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="input-group mb-3">
-                            <label for="bytes_uploaded" class="form-label">Bytes uploaded</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="bytes_uploaded" name="bytes uploaded" value="{{ user.bytes_uploaded }}" disabled>
+        
+                            <div class="input-group mb-3">
+                                <label for="directory" class="form-label">Directory</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="directory" name="directory" value="{{ user.directory }}" required>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="input-group mb-3">
-                            <label for="bytes_downloaded class="form-label">Bytes downloaded</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="bytes_downloaded" name="bytes downloaded" value="{{ user.bytes_downloaded }}" disabled>
+        
+                            <div class="input-group mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Leave blank to keep current password">
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="input-group mb-3">
-                            <label for="files_uploaded" class="form-label">Files uploaded</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="files_uploaded" name="files uploaded" value="{{ user.files_uploaded }}" disabled>
+        
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="status-switch" name="status_switch" value="Disabled"
+                                        aria-checked="{% if user.status == 'Disabled' %}true{% else %}false{% endif %}"
+                                        {% if user.status == 'Disabled' %}checked{% endif %}>
+                                    <label class="form-check-label" for="status-switch">Disable user</label>
+                                </div>
+                            </div>
+        
+                            <div class="button-group">
+                                <button type="button" class="btn btn-secondary" onclick='window.location.href="/home"'>Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save</button>
                             </div>
                         </div>
                     </div>
-
-
-                    <div class="second-column">
-                        <div class="input-group mb-3">
-                            <label for="files_downloaded" class="form-label">Files downloaded</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="files_downloaded" name="files downloaded" value="{{ user.files_downloaded }}" disabled>
-                            </div>
-                        </div>
-
-                        <div class="input-group mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
-                                <span class="input-group-text" id="basic-addon2">@example.com</span>
-                            </div>
-                        </div>
-    
-                        <div class="input-group mb-3">
-                            <label for="directory" class="form-label">Directory</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="directory" name="directory" value="{{ user.directory }}" required>
-                            </div>
-                        </div>
-    
-                        <div class="input-group mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="password" name="password" placeholder="Leave blank to keep current password">
-                            </div>
-                        </div>
-    
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" id="status-switch" name="status_switch" value="Disabled"
-                                    aria-checked="{% if user.status == 'Disabled' %}true{% else %}false{% endif %}"
-                                    {% if user.status == 'Disabled' %}checked{% endif %}>
-                                <label class="form-check-label" for="status-switch">Disable user</label>
-                            </div>
-                        </div>
-    
-                        <div class="button-group">
-                            <button type="button" class="btn btn-secondary" onclick='window.location.href="/home"'>Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save</button>
-                        </div>
-                        <button type="submit">Delete User</button>
+                    <div class="button-group">
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal">Delete User</button>
                     </div>
                 </form>
             </div>
         </div>
+
+        {% include 'modals.html' %}
+        
 </body>
 </html>
