@@ -24,5 +24,6 @@
 .button-group {
     display: flex;
     justify-content: flex-end;
-    gap: 10px; /* Optional: Add some space between the buttons */
+    gap: 10px; 
+    margin-top: 20px;
 }
