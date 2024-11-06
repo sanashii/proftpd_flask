@@ -2,4 +2,7 @@
 2. LDAP (saon ni par T-T :: clarify with sir mar)
 3. user table pagination - do not display all users (clarify lng with sir chie or sir badz para sa logic)
 4. dashboard - add cards (top 5 users who downloaded most files + top 5 users who uploaded most files)
-5. create user component password field - add a password generator (like the one sa kaspersky)
+DONE -- 5. create user component password field - add a password generator (like the one sa kaspersky)
+6. bulk user operations
+
+confusions: permissions? groupings? unclear since wa pay db

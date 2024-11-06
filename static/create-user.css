@@ -22,3 +22,49 @@
 .create-user-btn:hover {
     background-color: #5da39c;
 }
+
+.password-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.generator-popup {
+    position: absolute;
+    right: -250px;
+    top: 0;
+    width: 240px;
+    padding: 15px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: none;
+    z-index: 1000;
+}
+
+.strength-meter {
+    height: 4px;
+    background: #ddd;
+    margin: 10px 0;
+}
+
+.strength-meter div {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s;
+}
+
+.password-options label {
+    display: block;
+    margin: 5px 0;
+}
+
+#togglePassword {
+    border-right: none;
+}
+
+#togglePassword:hover {
+    background-color: #e9ecef;
+}

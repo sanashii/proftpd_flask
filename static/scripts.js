@@ -182,3 +182,131 @@ $(document).ready(function() {
         });
     }
 });
+
+// for password generator
+document.addEventListener('DOMContentLoaded', function() {
+    const generateBtn = document.getElementById('generateBtn');
+    const popup = document.getElementById('generatorPopup');
+    const passwordInput = document.getElementById('password');
+    const generatePassword = document.getElementById('generatePassword');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+    
+    generateBtn.addEventListener('click', () => {
+        popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    });
+
+    generatePassword.addEventListener('click', () => {
+        const length = document.getElementById('lengthRange').value;
+        const useUpper = document.getElementById('uppercase').checked;
+        const useNumbers = document.getElementById('numbers').checked;
+        const useSymbols = document.getElementById('symbols').checked;
+        
+        const password = generateRandomPassword(length, useUpper, useNumbers, useSymbols);
+        passwordInput.value = password;
+        checkPasswordStrength(password);
+    });
+
+    passwordInput.addEventListener('input', function() {
+        checkPasswordStrength(this.value);
+    });
+
+    function generateRandomPassword(length, useUpper, useNumbers, useSymbols) {
+        const lower = 'abcdefghijklmnopqrstuvwxyz';
+        const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const numbers = '0123456789';
+        const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        
+        let chars = lower;
+        if (useUpper) chars += upper;
+        if (useNumbers) chars += numbers;
+        if (useSymbols) chars += symbols;
+        
+        return Array(Number(length))
+            .fill(chars)
+            .map(x => x[Math.floor(Math.random() * x.length)])
+            .join('');
+    }
+
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        
+        if (password.length >= 8) strength += 20;
+        if (password.match(/[A-Z]/)) strength += 20;
+        if (password.match(/[a-z]/)) strength += 20;
+        if (password.match(/[0-9]/)) strength += 20;
+        if (password.match(/[^A-Za-z0-9]/)) strength += 20;
+
+        strengthBar.style.width = strength + '%';
+        strengthBar.style.backgroundColor = getStrengthColor(strength);
+        
+        let strengthLabel = 'Weak';
+        if (strength >= 80) strengthLabel = 'Strong';
+        else if (strength >= 60) strengthLabel = 'Good';
+        else if (strength >= 40) strengthLabel = 'Medium';
+        
+        strengthText.textContent = `Password Strength: ${strengthLabel}`;
+    }
+
+    function getStrengthColor(strength) {
+        if (strength >= 80) return '#4CAF50';
+        if (strength >= 60) return '#2196F3';
+        if (strength >= 40) return '#FFC107';
+        return '#F44336';
+    }
+
+    // Update length value display
+    document.getElementById('lengthRange').addEventListener('input', function() {
+        document.getElementById('lengthValue').textContent = this.value;
+    });
+
+    // Copy password functionality
+    const copyButton = document.getElementById('copyPassword');
+    if (copyButton) {
+        copyButton.addEventListener('click', async function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            try {
+                await navigator.clipboard.writeText(passwordInput.value);
+                
+                // Visual feedback
+                icon.classList.replace('fa-copy', 'fa-check');
+                
+                // Reset icon after 2 seconds
+                setTimeout(() => {
+                    icon.classList.replace('fa-check', 'fa-copy');
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                // Error feedback
+                icon.classList.replace('fa-copy', 'fa-times');
+                setTimeout(() => {
+                    icon.classList.replace('fa-times', 'fa-copy');
+                }, 2000);
+            }
+        });
+    }
+});
+
+// for copying generated password
+document.getElementById('copyPassword').addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
+    
+    // Copy password to clipboard
+    navigator.clipboard.writeText(passwordInput.value).then(function() {
+        // Visual feedback
+        const icon = this.querySelector('i');
+        icon.classList.remove('fa-copy');
+        icon.classList.add('fa-check');
+        
+        // Reset icon after 2 seconds
+        setTimeout(() => {
+            icon.classList.remove('fa-check');
+            icon.classList.add('fa-copy');
+        }, 2000);
+    }.bind(this)).catch(function(err) {
+        console.error('Failed to copy: ', err);
+    });
+});
