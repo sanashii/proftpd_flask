@@ -3,7 +3,7 @@ from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy.sql import func
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 app = Flask(__name__)
@@ -81,13 +81,25 @@ def manage_user(user_id):
 
 def get_filtered_sorted_users(sort_by='id', filter_status='all', search_query=''):
     query = User.query
-
+    
+    seven_days_ago = func.now() - timedelta(days=7)
+    
     if filter_status == 'active':
-        query = query.filter_by(status='Active')
+        query = query.filter(
+            User.status != 'Disabled',
+            User.last_login >= seven_days_ago
+        )
     elif filter_status == 'inactive':
-        query = query.filter(User.status.in_(['Inactive', 'Disabled']))
+        query = query.filter(
+            User.status != 'Disabled',
+            db.or_(
+                User.last_login < seven_days_ago,
+                User.last_login == None
+            )
+        )
     elif filter_status == 'all':
         query = query.filter(User.status.in_(['Active', 'Inactive', 'Disabled']))
+
 
     if sort_by == 'username':
         query = query.order_by(User.username)
@@ -139,16 +151,30 @@ def create_user():
     return render_template('create_user.html')
 
 # card component for home.html
+# In app.py, update the route
 @app.route('/api/user_status_counts', methods=['GET'])
 def get_user_status_counts():
-    active_users_count = User.query.filter_by(status='Active').count()
-    inactive_users_count = User.query.filter(User.status.in_(['Inactive'])).count()
-    disabled_users_count = User.query.filter_by(status='Disabled').count()
-
+    seven_days_ago = func.now() - timedelta(days=7)
+    
+    active_users = User.query.filter(
+        User.status != 'Disabled',
+        User.last_login >= seven_days_ago
+    ).count()
+    
+    inactive_users = User.query.filter(
+        User.status != 'Disabled',
+        db.or_(
+            User.last_login < seven_days_ago,
+            User.last_login == None
+        )
+    ).count()
+    
+    disabled_users = User.query.filter_by(status='Disabled').count()
+    
     return jsonify({
-        'active_users': active_users_count,
-        'inactive_users': inactive_users_count,
-        'disabled_users': disabled_users_count
+        'active_users': active_users,
+        'inactive_users': inactive_users,
+        'disabled_users': disabled_users
     })
 
 # for updating user info in manage_user.html
@@ -212,7 +238,7 @@ class User(db.Model):
     directory = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(10), nullable=False)
     
-    # New fields
+    # Existing fields
     login_count = db.Column(db.Integer, default=0)
     last_login = db.Column(db.DateTime, nullable=True)
     last_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -221,8 +247,17 @@ class User(db.Model):
     files_uploaded = db.Column(db.Integer, default=0)
     files_downloaded = db.Column(db.Integer, default=0)
 
-    def __repr__(self):
-        return f'<User {self.username}>'
+    @property
+    def computed_status(self):
+        if self.status == 'Disabled':
+            return 'Disabled'
+        
+        if self.last_login is None:
+            return 'Inactive'
+            
+        seven_days_ago = func.now() - timedelta(days=7)
+        return 'Inactive' if self.last_login < seven_days_ago else 'Active'
+
 
 # Run this once to initialize the database
 with app.app_context():
