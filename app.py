@@ -9,15 +9,15 @@ import os
 app = Flask(__name__)
 # app.config["SESSION_PERMANENT"] = False
 # app.config["SESSION_TYPE"] = "filesystem"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqldb://proftpd_stage:C{7#iUoNc82@FXCEBFS0304?charset=utf8"
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqldb://proftpd_stage:C{7#iUoNc82@FXCEBFS0304?charset=utf8"
 
-
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-'connect_args': {
-    'ssl' : None
-    }
-}
+# app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+# 'connect_args': {
+#     'ssl' : None
+#     }
+# }
 
 # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'smiskisecretkey1738dummydingdong'
@@ -79,12 +79,27 @@ def home():
     if not session.get("username"):
         return redirect("/login")
     
+    # Get all parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
     sort_by = request.args.get('sort_by', 'id')
     filter_status = request.args.get('filter_by', 'all')
     search_query = request.args.get('search', '')
 
-    users = get_filtered_sorted_users(sort_by, filter_status, search_query)
-    return render_template('home.html', users=users)
+    # Get filtered and sorted query
+    query = get_filtered_sorted_users(sort_by, filter_status, search_query)
+    
+    # Apply pagination to the query
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template('user_table.html', 
+                            users=pagination.items,
+                            pagination=pagination)
+
+    return render_template('home.html', 
+                         users=pagination.items,
+                         pagination=pagination)
 
 # manage user component
 @app.route('/manage_user/<int:user_id>', methods=['GET'])
@@ -127,7 +142,7 @@ def get_filtered_sorted_users(sort_by='id', filter_status='all', search_query=''
     if search_query:
         query = query.filter(User.username.like(f'%{search_query}%'))  # case insensitive search
 
-    return query.all()
+    return query
 
 # for logout button
 @app.route('/logout')

@@ -132,7 +132,6 @@ function updateURLParams(param, value) {
     const url = new URL(window.location);
     url.searchParams.set(param, value);
     
-    // Preserve existing parameters
     const existingParams = new URLSearchParams(window.location.search);
     for (const [key, val] of existingParams) {
         if (key !== param) {
@@ -140,6 +139,20 @@ function updateURLParams(param, value) {
         }
     }
     
+    // $.ajax({
+    //     url: '/home',
+    //     data: url.searchParams.toString(),
+    //     method: 'GET',
+    //     success: function(response) {
+    //         $('#content').html(response);
+    //         // Update URL without reload
+    //         history.pushState(null, '', `?${url.searchParams.toString()}`);
+    //     },
+    //     error: function(error) {
+    //         console.error('Error updating content:', error);
+    //     }
+    // });
+
     window.location.href = url.toString();
 }
 
@@ -161,9 +174,7 @@ function fetchUserStatusCounts() {
 
 $(document).ready(function() {
     fetchUserStatusCounts();
-});
 
-$(document).ready(function() {
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('user_id');
     if (userId) {
@@ -181,6 +192,11 @@ $(document).ready(function() {
             }
         });
     }
+});
+
+// for paginaction back and forward
+window.addEventListener('popstate', function() {
+    loadContent(window.location.pathname + window.location.search);
 });
 
 // for password generator
