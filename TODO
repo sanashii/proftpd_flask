@@ -1,4 +1,4 @@
-1. inactive status - should automatically be set to active if the user has not downloaded or uploaded files for x days (agad sa db)
+DONE -- 1. inactive status - should automatically be set to active if the user has not logged in for >= 7 days
 2. LDAP (saon ni par T-T :: clarify with sir mar)
 3. user table pagination - do not display all users (clarify lng with sir chie or sir badz para sa logic)
 4. dashboard - add cards (top 5 users who downloaded most files + top 5 users who uploaded most files)

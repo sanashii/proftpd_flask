@@ -7,17 +7,33 @@ from datetime import datetime, timedelta
 import os
 
 app = Flask(__name__)
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# app.config["SESSION_PERMANENT"] = False
+# app.config["SESSION_TYPE"] = "filesystem"
+
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqldb://proftpd_stage:C{7#iUoNc82@FXCEBFS0304?charset=utf8"
+
+
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+'connect_args': {
+    'ssl' : None
+    }
+}
+
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'smiskisecretkey1738dummydingdong'
 
-Session(app)
+# Session(app)
 db = SQLAlchemy(app)
 users = {"admin": "admin"} # dummy acc for admin -- in actuality, ppl with the @traxtech.com domain can access this [to implement: LDAP]
 
 migrate = Migrate(app, db)
+
+try:
+    with app.app_context():
+        db.engine.connect()
+        print("Database connection successful!")
+except Exception as e:
+    print(f"Error connecting to database: {e}")
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -259,9 +275,6 @@ class User(db.Model):
         return 'Inactive' if self.last_login < seven_days_ago else 'Active'
 
 
-# Run this once to initialize the database
-with app.app_context():
-    db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True)
