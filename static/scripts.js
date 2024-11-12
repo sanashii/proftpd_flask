@@ -139,19 +139,17 @@ function updateURLParams(param, value) {
         }
     }
     
-    // $.ajax({
-    //     url: '/home',
-    //     data: url.searchParams.toString(),
-    //     method: 'GET',
-    //     success: function(response) {
-    //         $('#content').html(response);
-    //         // Update URL without reload
-    //         history.pushState(null, '', `?${url.searchParams.toString()}`);
-    //     },
-    //     error: function(error) {
-    //         console.error('Error updating content:', error);
-    //     }
-    // });
+    $.ajax({
+        url: '/home',
+        data: url.searchParams.toString(),
+        method: 'GET',
+        success: function(response) {
+            history.pushState(null, '', `?${url.searchParams.toString()}`);
+        },
+        error: function(error) {
+            console.error('Error updating content:', error);
+        }
+    });
 
     window.location.href = url.toString();
 }
