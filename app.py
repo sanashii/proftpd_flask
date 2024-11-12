@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from flask import Flask, jsonify, render_template, url_for, request, redirect, session
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
@@ -7,20 +8,9 @@ from datetime import datetime, timedelta
 import os
 
 app = Flask(__name__)
-# app.config["SESSION_PERMANENT"] = False
-# app.config["SESSION_TYPE"] = "filesystem"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqldb://proftpd_stage:C{7#iUoNc82@FXCEBFS0304?charset=utf8"
-
-
-# app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-# 'connect_args': {
-#     'ssl' : None
-#     }
-# }
-
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'smiskisecretkey1738dummydingdong'
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqldb://proftpd_stage:###@FXCEBFS0304?charset=utf8"
+app.config['SECRET_KEY'] = '###'
 
 # Session(app)
 db = SQLAlchemy(app)
@@ -39,16 +29,16 @@ except Exception as e:
 def login():
     # Clear any existing session data
     session.clear()
-    
+
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        
+
         if username == "admin" and password == "admin":
             session["username"] = "admin"
             return redirect(url_for('home'))
         return render_template("login.html", show_modal='incorrect_password')
-    
+
     return render_template("login.html")
 
 
@@ -58,19 +48,19 @@ def password_reset():
         username = request.form['username']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
-        
+
         if username not in users:
             return render_template('password_reset.html', show_modal='user_not_found')
         elif password != confirm_password:
             return render_template('password_reset.html', show_modal='error', error_message='Passwords do not match')
         else:
             users[username] = password
-            return render_template('password_reset.html', 
-                                   show_modal='success', 
+            return render_template('password_reset.html',
+                                   show_modal='success',
                                    success_message='Your password has been successfully reset.',
                                    success_redirect=url_for('login'),
                                    success_button_text='Back to Login')
-    
+
     return render_template('password_reset.html')
 
 
@@ -78,7 +68,7 @@ def password_reset():
 def home():
     if not session.get("username"):
         return redirect("/login")
-    
+
     # Get all parameters
     page = request.args.get('page', 1, type=int)
     per_page = 10
@@ -88,16 +78,16 @@ def home():
 
     # Get filtered and sorted query
     query = get_filtered_sorted_users(sort_by, filter_status, search_query)
-    
+
     # Apply pagination to the query
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return render_template('user_table.html', 
+        return render_template('user_table.html',
                             users=pagination.items,
                             pagination=pagination)
 
-    return render_template('home.html', 
+    return render_template('home.html',
                          users=pagination.items,
                          pagination=pagination)
 
@@ -106,15 +96,15 @@ def home():
 def manage_user(user_id):
     if not session.get("username"):
         return redirect("/login")
-    
+
     user = User.query.get_or_404(user_id)
-    return render_template('manage_user.html', user=user) 
+    return render_template('manage_user.html', user=user)
 
 def get_filtered_sorted_users(sort_by='id', filter_status='all', search_query=''):
     query = User.query
-    
+
     seven_days_ago = func.now() - timedelta(days=7)
-    
+
     if filter_status == 'active':
         query = query.filter(
             User.status != 'Disabled',
@@ -168,15 +158,15 @@ def create_user():
             )
             db.session.add(new_user)
             db.session.commit()
-            return render_template('create_user.html', 
-                                show_modal='success', 
+            return render_template('create_user.html',
+                                show_modal='success',
                                 success_message='User created successfully',
                                 success_redirect=url_for('home'),
                                 success_button_text='Back to Home')
         except Exception as e:
             db.session.rollback()
-            return render_template('create_user.html', 
-                                show_modal='error', 
+            return render_template('create_user.html',
+                                show_modal='error',
                                 error_message='Error creating user')
 
     return render_template('create_user.html')
@@ -186,12 +176,12 @@ def create_user():
 @app.route('/api/user_status_counts', methods=['GET'])
 def get_user_status_counts():
     seven_days_ago = func.now() - timedelta(days=7)
-    
+
     active_users = User.query.filter(
         User.status != 'Disabled',
         User.last_login >= seven_days_ago
     ).count()
-    
+
     inactive_users = User.query.filter(
         User.status != 'Disabled',
         db.or_(
@@ -199,9 +189,9 @@ def get_user_status_counts():
             User.last_login == None
         )
     ).count()
-    
+
     disabled_users = User.query.filter_by(status='Disabled').count()
-    
+
     return jsonify({
         'active_users': active_users,
         'inactive_users': inactive_users,
@@ -213,24 +203,24 @@ def get_user_status_counts():
 def update_user():
     if not session.get("username"):
         return redirect("/login")
-        
+
     user_id = request.form.get('user_id')
     user = User.query.get_or_404(user_id)
-    
+
     user.username = request.form.get('username')
     user.directory = request.form.get('directory')
-    
+
     # Status switch handling
     if 'status_switch' in request.form:
         user.status = 'Disabled'
     else:
         user.status = 'Active'
-    
+
     # Password update
     new_password = request.form.get('password')
     if new_password and new_password.strip():
         user.password = new_password
-    
+
     # last_modified will update automatically due to onupdate
     try:
         db.session.commit()
@@ -244,20 +234,20 @@ def update_user():
 def delete_user(user_id):
     if not session.get("username"):
         return redirect("/login")
-    
+
     user = User.query.get_or_404(user_id)
     try:
         db.session.delete(user)
         db.session.commit()
         return jsonify({
-            'success': True, 
+            'success': True,
             'message': 'User deleted successfully',
             'show_modal': 'success'
         })
     except Exception as e:
         db.session.rollback()
         return jsonify({
-            'success': False, 
+            'success': False,
             'message': 'Error deleting user',
             'show_modal': 'error'
         })
@@ -268,7 +258,7 @@ class User(db.Model):
     password = db.Column(db.String(120), nullable=False)
     directory = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(10), nullable=False)
-    
+
     # Existing fields
     login_count = db.Column(db.Integer, default=0)
     last_login = db.Column(db.DateTime, nullable=True)
@@ -282,10 +272,10 @@ class User(db.Model):
     def computed_status(self):
         if self.status == 'Disabled':
             return 'Disabled'
-        
+
         if self.last_login is None:
             return 'Inactive'
-            
+
         seven_days_ago = func.now() - timedelta(days=7)
         return 'Inactive' if self.last_login < seven_days_ago else 'Active'
 
