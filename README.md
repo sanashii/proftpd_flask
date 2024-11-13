@@ -36,7 +36,7 @@ CREATE TABLE `users` (
   `username` varchar(128) NOT NULL,
   `password` varchar(128) NOT NULL,
   `uid` int(11) DEFAULT NULL,
-  `gid` int(11) DEFAULT NULL,
+  `gid` int(11) DEFAULT NULL, 
   `homedir` varchar(255) DEFAULT NULL,
   `shell` varchar(255) DEFAULT NULL,
   `enabled` tinyint(1) DEFAULT '1',

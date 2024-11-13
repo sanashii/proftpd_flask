@@ -6,3 +6,5 @@ DONE -- 5. create user component password field - add a password generator (like
 6. bulk user operations -- change directory or disable the status of x (selected) users
 
 confusions: permissions? groupings? unclear since wa pay db
+
+    
