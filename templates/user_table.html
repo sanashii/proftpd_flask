@@ -44,66 +44,66 @@
     </nav>
 
     <table class="table table-hover table-sm">
-    <thead>
-      <tr>
-        <th scope="col">Username</th>
-        <th scope="col">Email</th>
-        <th scope="col">Home Directory</th>
-        <th scope="col">Status</th>
-      </tr>
-    </thead>
-    <tbody>
-        {% if users %}
-            {% for user in users %}
-            <tr onclick=window.location.href="{{ url_for('manage_user', username=user.username) }}" style="cursor: pointer;">
-                <td>{{ user.username }}</td>
-                <td>{{ user.email or 'N/A' }}</td>
-                <td>{{ user.homedir }}</td>
-                <td>
-                    <span class="badge {% if 'Active' in user.computed_status %}bg-success
-                                     {% elif 'Disabled' in user.computed_status %}bg-danger
-                                     {% else %}bg-warning{% endif %}">
-                        {{ user.computed_status }}
-                    </span>
-                </td>
-            </tr>
-            {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="4" class="text-center">No users found</td>
-            </tr>
-        {% endif %}
-    </tbody>
-</table>
+        <thead>
+        <tr>
+            <th scope="col">Username</th>
+            <th scope="col">Email</th>
+            <th scope="col">Home Directory</th>
+            <th scope="col">Status</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% if users %}
+                {% for user in users %}
+                <tr onclick=window.location.href="{{ url_for('manage_user', username=user.username) }}" style="cursor: pointer;">
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email or 'N/A' }}</td>
+                    <td>{{ user.homedir }}</td>
+                    <td>
+                        <span class="badge {% if 'Active' in user.computed_status %}bg-success
+                                        {% elif 'Disabled' in user.computed_status %}bg-danger
+                                        {% else %}bg-warning{% endif %}">
+                            {{ user.computed_status }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">No users found</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
 
     <!-- pagination -->
     <nav aria-label="User table pages" class="d-flex justify-content-center">
         <ul class="pagination">
-        {% if pagination.has_prev %}
-        <li class="page-item">
-            <a class="page-link" href="#" onclick="updateURLParams('page', '{{ pagination.prev_num }}')" aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
-            </a>
-        </li>
-        {% endif %}
-    
-        {% for page_num in pagination.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=3) %}
-            {% if page_num %}
-            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                <a class="page-link" href="#" onclick="updateURLParams('page', '{{ page_num }}')">{{ page_num }}</a>
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="updateURLParams('page', '{{ pagination.prev_num }}'); return false;">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
             </li>
-            {% else %}
-            <li class="page-item disabled"><span class="page-link">...</span></li>
             {% endif %}
-        {% endfor %}
-    
-        {% if pagination.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="#" onclick="updateURLParams('page', '{{ pagination.next_num }}')" aria-label="Next">
-            <span aria-hidden="true">&raquo;</span>
-            </a>
-        </li>
-        {% endif %}
+            
+            {% for page_num in pagination.iter_pages() %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="#" onclick="updateURLParams('page', '{{ page_num }}'); return false;">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="updateURLParams('page', '{{ pagination.next_num }}'); return false;">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
         </ul>
     </nav>
 </body>

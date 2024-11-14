@@ -164,11 +164,6 @@ def home():
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return render_template('user_table.html',
-                                users=pagination.items,
-                                pagination=pagination)
-
     return render_template('home.html',
                             users=pagination.items,
                             pagination=pagination)

@@ -1,5 +1,65 @@
 let deleteUserModal;
 
+const pageCache = {
+    data: new Map(),
+    maxSize: 20, // Maximum number of pages to cache
+    
+    set: function(key, value) {
+        if (this.data.size >= this.maxSize) {
+            // Remove oldest entry
+            const firstKey = this.data.keys().next().value;
+            this.data.delete(firstKey);
+        }
+        this.data.set(key, {
+            content: value,
+            timestamp: Date.now()
+        });
+    },
+    
+    get: function(key) {
+        const entry = this.data.get(key);
+        if (entry) {
+            entry.timestamp = Date.now(); // Update last accessed time
+            return entry.content;
+        }
+        return null;
+    },
+
+    clear: function() {
+        this.data.clear();
+    }
+};
+
+$(document).ready(function() {
+    fetchUserStatusCounts();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user_id');
+    if (userId) {
+        $.ajax({
+            url: `/user/${userId}`,
+            type: 'GET',
+            success: function(data) {
+                $('#user-id').val(data.id);
+                $('#username').val(data.username);
+                $('#directory').val(data.directory);
+                $('#status').val(data.status);
+            },
+            error: function() {
+                alert("Error loading user details.");
+            }
+        });
+    }
+});
+
+$('#sortDropdown, #filterDropdown').on('click', 'a', function() {
+    clearCache();
+});
+
+$('input[name="search"]').on('input', function() {
+    clearCache();
+});
+
 $(document).ready(function() {
     // for toggling the dropdown menu in user_table
     var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
@@ -129,29 +189,53 @@ function validateForm() {
 }
 
 function updateURLParams(param, value) {
+    if ($('.table-responsive').hasClass('loading')) return;
+    
     const url = new URL(window.location);
     url.searchParams.set(param, value);
     
-    const existingParams = new URLSearchParams(window.location.search);
-    for (const [key, val] of existingParams) {
-        if (key !== param) {
-            url.searchParams.set(key, val);
-        }
+    // Generate cache key from all relevant params
+    const cacheKey = JSON.stringify({
+        page: url.searchParams.get('page'),
+        sort_by: url.searchParams.get('sort_by'),
+        filter_by: url.searchParams.get('filter_by'),
+        search: url.searchParams.get('search')
+    });
+
+    // Check cache first
+    const cachedContent = pageCache.get(cacheKey);
+    if (cachedContent) {
+        $('.table-responsive').html(cachedContent);
+        history.pushState(null, '', `?${url.searchParams.toString()}`);
+        return;
     }
+    
+    $('.table-responsive').addClass('loading');
     
     $.ajax({
         url: '/home',
         data: url.searchParams.toString(),
         method: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
         success: function(response) {
+            const content = $(response).find('.table-responsive').html();
+            $('.table-responsive').html(content);
+            
+            // Cache the new content
+            pageCache.set(cacheKey, content);
+            
             history.pushState(null, '', `?${url.searchParams.toString()}`);
+            $('.table-responsive').removeClass('loading');
         },
         error: function(error) {
             console.error('Error updating content:', error);
+            $('.table-responsive').removeClass('loading');
         }
     });
+}
 
-    window.location.href = url.toString();
+function clearCache() {
+    pageCache.clear();
 }
 
 // for card component
@@ -169,28 +253,6 @@ function fetchUserStatusCounts() {
         }
     });
 }
-
-$(document).ready(function() {
-    fetchUserStatusCounts();
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('user_id');
-    if (userId) {
-        $.ajax({
-            url: `/user/${userId}`,
-            type: 'GET',
-            success: function(data) {
-                $('#user-id').val(data.id);
-                $('#username').val(data.username);
-                $('#directory').val(data.directory);
-                $('#status').val(data.status);
-            },
-            error: function() {
-                alert("Error loading user details.");
-            }
-        });
-    }
-});
 
 // for paginaction back and forward
 window.addEventListener('popstate', function() {
