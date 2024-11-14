@@ -216,7 +216,7 @@ function updateURLParams(param, value) {
         url: '/home',
         data: url.searchParams.toString(),
         method: 'GET',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        // headers: { 'X-Requested-With': 'XMLHttpRequest' },
         success: function(response) {
             const content = $(response).find('.table-responsive').html();
             $('.table-responsive').html(content);
