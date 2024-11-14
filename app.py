@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 
 app = Flask(__name__)
@@ -42,20 +42,34 @@ class User(db.Model):
     
     @property
     def computed_status(self):
+        # First check if manually disabled
         if not self.enabled:
             return 'Disabled'
             
-        if not self.last_accessed:
+        # Check if never accessed
+        if self.last_accessed is None:
             return 'Inactive (Never accessed)'
             
-        days_inactive = (func.now() - self.last_accessed).days
-        
-        if days_inactive >= 150:  # ~5 months
-            return 'Disabled'
-        elif days_inactive > 7:
-            return f'Inactive ({days_inactive} days)'
-        else:
-            return 'Active'
+        try:
+            # Use timezone-aware datetime
+            now = datetime.now(timezone.utc)
+            if self.last_accessed.tzinfo is None:
+                # Make naive datetime timezone-aware
+                last_accessed = self.last_accessed.replace(tzinfo=timezone.utc)
+            else:
+                last_accessed = self.last_accessed
+                
+            days_inactive = (now - last_accessed).days
+            
+            if days_inactive > 150:
+                return 'Disabled'
+            elif days_inactive > 7:
+                return f'Inactive ({days_inactive} days)'
+            else:
+                return 'Active'
+        except Exception as e:
+            print(f"Error calculating status: {e}")
+            return 'Inactive (Error calculating days)'
 
 class Group(db.Model):
     __tablename__ = 'groups'
@@ -195,27 +209,27 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
     # Apply status filter
     if filter_status != 'all':
         now = func.now()
+        seven_days_ago = now - timedelta(days=7)
+        five_months_ago = now - timedelta(days=150)
+        
         if filter_status == 'active':
-            # Active: last accessed within 7 days and enabled
-            seven_days_ago = now - timedelta(days=7)
             query = query.filter(
                 User.enabled == True,
+                User.last_accessed.isnot(None),
                 User.last_accessed >= seven_days_ago
             )
         elif filter_status == 'inactive':
-            # Inactive: last accessed > 7 days ago but < 150 days and enabled
-            seven_days_ago = now - timedelta(days=7)
-            five_months_ago = now - timedelta(days=150)
             query = query.filter(
                 User.enabled == True,
                 db.or_(
-                    User.last_accessed.between(five_months_ago, seven_days_ago),
-                    User.last_accessed == None
+                    User.last_accessed.is_(None),
+                    db.and_(
+                        User.last_accessed < seven_days_ago,
+                        User.last_accessed >= five_months_ago
+                    )
                 )
             )
         elif filter_status == 'disabled':
-            # Disabled: either explicitly disabled or inactive > 150 days
-            five_months_ago = now - timedelta(days=150)
             query = query.filter(
                 db.or_(
                     User.enabled == False,
@@ -274,30 +288,38 @@ def create_user():
 @app.route('/api/user_status_counts', methods=['GET'])
 def get_user_status_counts():
     try:
-        now = func.now()
+        # Use timezone-aware datetime
+        now = datetime.now(timezone.utc)
         seven_days_ago = now - timedelta(days=7)
         five_months_ago = now - timedelta(days=150)
 
         # Active users: enabled and accessed within 7 days
         active_users = User.query.filter(
             User.enabled == True,
+            User.last_accessed.isnot(None),
             User.last_accessed >= seven_days_ago
         ).count()
 
-        # Inactive users: enabled but not accessed for > 7 days but < 150 days
+        # Inactive users: enabled and either never accessed or inactive 7-150 days
         inactive_users = User.query.filter(
             User.enabled == True,
             db.or_(
-                User.last_accessed.between(five_months_ago, seven_days_ago),
-                User.last_accessed == None
+                User.last_accessed.is_(None),
+                db.and_(
+                    User.last_accessed < seven_days_ago,
+                    User.last_accessed >= five_months_ago
+                )
             )
         ).count()
 
-        # Disabled users: either explicitly disabled or inactive > 150 days
+        # Disabled users: either manually disabled or inactive > 150 days
         disabled_users = User.query.filter(
             db.or_(
                 User.enabled == False,
-                User.last_accessed < five_months_ago
+                db.and_(
+                    User.last_accessed.isnot(None),
+                    User.last_accessed < five_months_ago
+                )
             )
         ).count()
 
