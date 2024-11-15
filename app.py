@@ -9,8 +9,21 @@ from datetime import datetime, timedelta, timezone
 import os
 
 app = Flask(__name__)
+
+@app.template_filter('datetime')
+def format_datetime(value):
+    if value is None:
+        return 'Never'
+    if isinstance(value, str):
+        try:
+            value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return value
+    return value.strftime('%Y-%m-%d %H:%M:%S')
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://proftpd_stage:C{7#iUoNc82@FXCEBFS0304?charset=utf8"
+# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://proftpd_stage:####@FXCEBFS0304?charset=utf8"
+# app.config['SECRET_KEY'] = '####'
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://proftpd_stage:C{7#iUoNc82@FXCEBFS0304/proftpd?charset=utf8"
 app.config['SECRET_KEY'] = 'smiskisecretkey1738dummydingdong'
 
@@ -104,7 +117,7 @@ class UserKey(db.Model):
 class XferLog(db.Model):
     __tablename__ = 'xferlog'
     
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # Remove id field since it doesn't exist in database
     username = db.Column(db.String(128), db.ForeignKey('users.username', ondelete='CASCADE', onupdate='CASCADE'))
     filename = db.Column(db.Text)
     size = db.Column(db.BigInteger)
@@ -114,6 +127,10 @@ class XferLog(db.Model):
     duration = db.Column(db.Text)
     localtime = db.Column(db.DateTime)
     success = db.Column(db.Text)
+
+    __mapper_args__ = {
+        'primary_key': [username, localtime]  # Using composite key
+    }
 
 
 try:
@@ -190,9 +207,17 @@ def manage_user(username):
         return redirect("/login")
 
     user = User.query.get_or_404(username)
-    return render_template('manage_user.html', user=user)
+    
+    # Get latest transfer log
+    latest_transfer = XferLog.query.filter_by(username=username)\
+        .order_by(XferLog.localtime.desc())\
+        .first()
 
-# app.py
+    return render_template('manage_user.html', 
+                         user=user,
+                         latest_transfer=latest_transfer)
+
+
 def get_filtered_sorted_users(sort_by='username', filter_status='all', search_query=''):
     query = User.query
 
@@ -345,28 +370,33 @@ def update_user():
 
     username = request.form.get('username')
     user = User.query.get_or_404(username)
-
-    user.username = request.form.get('username')
-    user.directory = request.form.get('directory')
-
-    # Status switch handling
-    if 'status_switch' in request.form:
-        user.status = 'Disabled'
-    else:
-        user.status = 'Active'
-
-    # Password update
-    new_password = request.form.get('password')
-    if new_password and new_password.strip():
-        user.password = new_password
-
-    # last_modified will update automatically due to onupdate
+    
     try:
+        # Update user fields
+        user.homedir = request.form.get('homedir')
+        user.name = request.form.get('name')
+        user.phone = request.form.get('phone')
+        user.email = request.form.get('email')
+        
+        # Update password if provided
+        new_password = request.form.get('password')
+        if new_password:
+            user.password = new_password
+            
+        # Update enabled status
+        user.enabled = not request.form.get('enabled')  # Checkbox is checked when disabled
+        
         db.session.commit()
+        
         return redirect(url_for('home'))
+        
     except Exception as e:
         db.session.rollback()
-        return redirect(url_for('manage_user', user_id=user_id))
+        print(f"Error updating user: {e}")
+        return render_template('manage_user.html',
+                             user=user,
+                             show_modal='error',
+                             error_message='Error updating user')
 
 # for deleting user in manage_user.html
 @app.route('/delete_user/<string:username>', methods=['POST'])

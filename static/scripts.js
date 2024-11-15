@@ -87,43 +87,62 @@ $(document).ready(function() {
 
     // Handle user row click event
     $(document).on('click', 'tr.user-row', function() {
-        const userId = $(this).data('user-id');
-        loadManageUser(userId);
+        const userName = $(this).data('username');
+        loadManageUser(userName);
     });
 
-    // Check if there's a user_id in the URL and load the manage user content
+    // Check if there's a username in the URL and load the manage user content
     const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('user_id');
-    if (userId) {
-        loadManageUser(userId);
+    const userName = urlParams.get('username');
+    if (userName) {
+        loadManageUser(userName);
     }
 
-    deleteUserModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
-
-    // Handle delete button click
-    $('#deleteUserBtn').click(function() {
-        deleteUserModal.show();
-    });
-
-    // Handle delete confirmation
-    $('#confirmDeleteUser').click(function() {
-        const userId = document.querySelector('input[name="user_id"]').value;
-        
-        $.ajax({
-            url: `/delete_user/${userId}`,
-            type: 'POST',
-            success: function(response) {
-                deleteUserModal.hide();
-                if (response.success) {
-                    window.location.href = '/home';
-                } else {
-                    alert('Error deleting user');
-                }
-            },
-            error: function() {
-                deleteUserModal.hide();
-                alert('Error deleting user');
+    $(document).ready(function() {
+        // Initialize delete modal
+        const deleteUserModalElement = document.getElementById('deleteUserModal');
+        let deleteUserModal;
+        if (deleteUserModalElement) {
+            deleteUserModal = new bootstrap.Modal(deleteUserModalElement);
+        }
+    
+        // Handle delete button click
+        $(document).on('click', '#deleteUserBtn', function(e) {
+            e.preventDefault();
+            if (deleteUserModal) {
+                deleteUserModal.show();
             }
+        });
+    
+        // Handle delete confirmation
+        $(document).on('click', '#confirmDeleteUser', function(e) {
+            e.preventDefault();
+            const username = $('input[name="username"]').val();
+    
+            $.ajax({
+                url: `/delete_user/${encodeURIComponent(username)}`,
+                type: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    if (deleteUserModal) {
+                        deleteUserModal.hide();
+                    }
+                    if (response.success) {
+                        window.location.href = '/home';
+                    } else {
+                        alert(response.message || 'Error deleting user');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    if (deleteUserModal) {
+                        deleteUserModal.hide();
+                    }
+                    alert('Error deleting user: ' + (error || xhr.statusText));
+                    console.error('Error deleting user:', error);
+                }
+            });
         });
     });
 });
@@ -147,12 +166,12 @@ function loadCreateUser() {
         });
 }
 
-function loadManageUser(userId) {
+function loadManageUser(userName) {
     // Update the URL without reloading the full page
-    history.pushState(null, '', `/manage_user/${userId}`);
+    history.pushState(null, '', `/manage_user/${userName}`);
 
     // Fetch and load only the manage_user content (no navigation bar)
-    fetch(`/manage_user/${userId}`)
+    fetch(`/manage_user/${userName}`)
         .then(response => response.text())
         .then(data => {
             document.getElementById('content').innerHTML = data;
