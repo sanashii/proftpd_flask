@@ -29,12 +29,10 @@
                     Filter by: {{ request.args.get('filter_by', 'All') | title }}
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                    <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                        <li><a class="dropdown-item" href="#" onclick="updateURLParams('filter_by', 'active')">Active</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="updateURLParams('filter_by', 'inactive')">Inactive</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="updateURLParams('filter_by', 'disabled')">Disabled</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="updateURLParams('filter_by', 'all')">All</a></li>
-                    </ul>
+                    <li><a class="dropdown-item" href="#" onclick="updateURLParams('filter_by', 'active')">Active</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="updateURLParams('filter_by', 'inactive')">Inactive</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="updateURLParams('filter_by', 'disabled')">Disabled</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="updateURLParams('filter_by', 'all')">All</a></li>
                 </ul>
             </div>
     

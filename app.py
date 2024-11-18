@@ -201,14 +201,20 @@ def home():
     filter_status = request.args.get('filter_by', 'all')
     search_query = request.args.get('search', '')
     
-    # Get base query
     query = get_filtered_sorted_users(sort_by, filter_status, search_query)
-
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
+    # # Check if it's an AJAX request
+    # if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+    #     # Return only the table content
+    #     return render_template('components/user_table.html',
+    #                          users=pagination.items,
+    #                          pagination=pagination)
+
+    # Return full page for initial load
     return render_template('home.html',
-                            users=pagination.items,
-                            pagination=pagination)
+                         users=pagination.items,
+                         pagination=pagination)
 
 
 # manage user component
@@ -243,6 +249,7 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
         )
 
     # Apply status filter
+    # Apply status filter
     if filter_status != 'all':
         now = func.now()
         seven_days_ago = now - timedelta(days=7)
@@ -261,15 +268,15 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
                     User.last_accessed.is_(None),
                     db.and_(
                         User.last_accessed < seven_days_ago,
-                        User.last_accessed >= five_months_ago
+                        User.last_accessed > five_months_ago  # Changed from <= to >
                     )
                 )
             )
         elif filter_status == 'disabled':
             query = query.filter(
                 db.or_(
-                    User.enabled == False,
-                    User.last_accessed < five_months_ago
+                    User.enabled == False,  # Manually disabled
+                    User.last_accessed <= five_months_ago  # Changed from > to <=
                 )
             )
 

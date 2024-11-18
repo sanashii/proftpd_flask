@@ -52,14 +52,6 @@ $(document).ready(function() {
     }
 });
 
-$('#sortDropdown, #filterDropdown').on('click', 'a', function() {
-    clearCache();
-});
-
-$('input[name="search"]').on('input', function() {
-    clearCache();
-});
-
 $(document).ready(function() {
     // for toggling the dropdown menu in user_table
     var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
@@ -213,7 +205,7 @@ function updateURLParams(param, value) {
     const url = new URL(window.location);
     url.searchParams.set(param, value);
     
-    // Generate cache key from all relevant params
+    // Generate cache key
     const cacheKey = JSON.stringify({
         page: url.searchParams.get('page'),
         sort_by: url.searchParams.get('sort_by'),
@@ -225,6 +217,7 @@ function updateURLParams(param, value) {
     const cachedContent = pageCache.get(cacheKey);
     if (cachedContent) {
         $('.table-responsive').html(cachedContent);
+        updateDropdownText(param, value);
         history.pushState(null, '', `?${url.searchParams.toString()}`);
         return;
     }
@@ -243,6 +236,9 @@ function updateURLParams(param, value) {
             // Cache the new content
             pageCache.set(cacheKey, content);
             
+            // Update dropdown text
+            updateDropdownText(param, value);
+            
             history.pushState(null, '', `?${url.searchParams.toString()}`);
             $('.table-responsive').removeClass('loading');
         },
@@ -252,6 +248,23 @@ function updateURLParams(param, value) {
         }
     });
 }
+
+function updateDropdownText(param, value) {
+    if (param === 'sort_by') {
+        $('#sortDropdown').text(`Sort by: ${value.charAt(0).toUpperCase() + value.slice(1)}`);
+    } else if (param === 'filter_by') {
+        $('#filterDropdown').text(`Filter by: ${value.charAt(0).toUpperCase() + value.slice(1)}`);
+    }
+}
+
+// Clear cache when filters change
+$('#sortDropdown, #filterDropdown').on('click', 'a', function() {
+    clearCache();
+});
+
+$('input[name="search"]').on('input', function() {
+    clearCache();
+});
 
 function clearCache() {
     pageCache.clear();
