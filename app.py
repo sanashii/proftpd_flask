@@ -144,13 +144,12 @@ class XferLog(db.Model):
         'primary_key': [username, localtime]  # Using composite key
     }
 
-
-try:
-    with app.app_context():
-        db.engine.connect()
-        print("Database connection successful!")
-except Exception as e:
-    print(f"Error connecting to database: {e}")
+# try:
+#     with app.app_context():
+#         db.engine.connect()
+#         print("Database connection successful!")
+# except Exception as e:
+#     print(f"Error connecting to database: {e}")
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -294,18 +293,34 @@ def logout():
 def create_user():
     if request.method == 'POST':
         try:
+            username = request.form.get('username')
+            password = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+            homedir = request.form.get('directory')
+            name = request.form.get('name')
+            phone = request.form.get('phone')
+            email = request.form.get('email')
+            enabled = not request.form.get('enabled')  # Checkbox is checked when disabled
+
+            if password != confirm_password:
+                return render_template('create_user.html',
+                                       show_modal='error',
+                                       error_message='Passwords do not match')
+
             new_user = User(
-                username=request.form.get('username'),
-                directory=request.form.get('directory'),
-                status=request.form.get('status'),
-                login_count=0,
-                bytes_uploaded=0,
-                bytes_downloaded=0,
-                files_uploaded=0,
-                files_downloaded=0
-                # last_modified will be set automatically
+                username=username,
+                homedir=homedir,
+                name=name if name else None,
+                phone=phone if phone else None,
+                email=email if email else None,
+                enabled=enabled,
+                uid=None,
+                gid=None,
+                shell=None,
+                last_accessed=None
             )
-            new_user.set_password(request.form.get('password')) # hashing of password
+            new_user.set_password(password)
+            
             db.session.add(new_user)
             db.session.commit()
             return render_template('create_user.html',

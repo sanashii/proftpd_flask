@@ -19,7 +19,7 @@
                                    value="{{ user.last_accessed|default('Never', true)|datetime }}" disabled>
                         </div>
     
-                        <div class="mb-3">
+                        <!-- <div class="mb-3">
                             <label for="last_modified" class="form-label">Last Modified (to be replaced)</label>
                             <input type="text" class="form-control" id="last_modified" 
                                    value="{{ user.last_modified|default('Never', true)|datetime }}" disabled>
@@ -35,7 +35,7 @@
                             <label for="transfer_size" class="form-label">Last Transfer Size</label>
                             <input type="text" class="form-control" id="transfer_size" 
                                    value="{{ latest_transfer.size|filesizeformat if latest_transfer else '0 B' }}" disabled>
-                        </div>
+                        </div> -->
     
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
@@ -48,16 +48,16 @@
                             <input type="text" class="form-control" id="homedir" name="homedir" 
                                    value="{{ user.homedir }}" required>
                         </div>
-                    </div>
-    
-                    <!-- Second column -->
-                    <div class="col-md-6">
+
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="name" name="name" 
                                    value="{{ user.name }}">
                         </div>
+                    </div>
     
+                    <!-- Second column -->
+                    <div class="col-md-6">
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone</label>
                             <input type="text" class="form-control" id="phone" name="phone" 
