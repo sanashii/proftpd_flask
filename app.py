@@ -7,6 +7,10 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from datetime import datetime, timedelta, timezone
 import os
+import hashlib
+import binascii
+import random
+import string
 
 app = Flask(__name__)
 
@@ -83,6 +87,14 @@ class User(db.Model):
         except Exception as e:
             print(f"Error calculating status: {e}")
             return 'Inactive (Error calculating days)'
+        
+    def set_password(self, password):
+        salt = ''.join(random.choice(string.ascii_lowercase) for x in range(2))
+        self.password = salt + binascii.hexlify(hashlib.md5((salt + password).encode('utf-8')).digest()).decode('utf-8').upper()
+
+    def check_password(self, password):
+        salt = self.password[:2]
+        return self.password == salt + binascii.hexlify(hashlib.md5((salt + password).encode('utf-8')).digest()).decode('utf-8').upper()
 
 class Group(db.Model):
     __tablename__ = 'groups'
@@ -284,7 +296,6 @@ def create_user():
         try:
             new_user = User(
                 username=request.form.get('username'),
-                password=request.form.get('password'),
                 directory=request.form.get('directory'),
                 status=request.form.get('status'),
                 login_count=0,
@@ -294,6 +305,7 @@ def create_user():
                 files_downloaded=0
                 # last_modified will be set automatically
             )
+            new_user.set_password(request.form.get('password')) # hashing of password
             db.session.add(new_user)
             db.session.commit()
             return render_template('create_user.html',
@@ -362,7 +374,7 @@ def get_user_status_counts():
             'disabled_users': 0
         }), 500
 
-# for updating user info in manage_user.html
+# for updating user info in manage_user.html w/ hashing is password is changed
 @app.route('/update_user', methods=['POST'])
 def update_user():
     if not session.get("username"):
@@ -381,13 +393,12 @@ def update_user():
         # Update password if provided
         new_password = request.form.get('password')
         if new_password:
-            user.password = new_password
+            user.set_password(new_password)
             
         # Update enabled status
-        user.enabled = not request.form.get('enabled')  # Checkbox is checked when disabled
+        user.enabled = not request.form.get('enabled')
         
         db.session.commit()
-        
         return redirect(url_for('home'))
         
     except Exception as e:
@@ -399,6 +410,7 @@ def update_user():
                              error_message='Error updating user')
 
 # for deleting user in manage_user.html
+#! NOTE: button is currently disabled but if enabled, the user deletion does not work yet [to be updated]
 @app.route('/delete_user/<string:username>', methods=['POST'])
 def delete_user(username):
     if not session.get("username"):
