@@ -5,13 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create User</title>
 </head>
-<body>
+<body data-show-modal="{{ show_modal if show_modal else '' }}">
     <div class="main-container">
         <div class="create-user-container">
             <form action="{{ url_for('create_user') }}" method="POST">
                 <div class="row">
                     <!-- First column -->
                     <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="uid" class="form-label">UID</label>
+                            <input type="text" class="form-control" id="uid" name="uid" 
+                                   value="1000" required readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="gid" class="form-label">GID</label>
+                            <input type="text" class="form-control" id="gid" name="gid" 
+                                   value="1000" required readonly>
+                        </div>
+
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" class="form-control" id="username" name="username" required>
@@ -64,15 +76,15 @@
                             <label for="confirm-password" class="form-label">Confirm Password</label>
                             <input type="password" class="form-control" id="confirm-password" name="confirm_password" required>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="directory" class="form-label">Directory</label>
-                            <input type="text" class="form-control" id="directory" name="directory" required>
-                        </div>
                     </div>
 
                     <!-- Second column -->
                     <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="directory" class="form-label">Directory</label>
+                            <input type="text" class="form-control" id="directory" name="directory" required>
+                        </div>
+
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="name" name="name">
@@ -105,5 +117,6 @@
     </div>
 
     {% include 'modals.html' %}
+
 </body>
 </html>

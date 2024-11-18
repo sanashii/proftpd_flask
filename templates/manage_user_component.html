@@ -44,20 +44,32 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="homedir" class="form-label">Directory</label>
-                            <input type="text" class="form-control" id="homedir" name="homedir" 
-                                   value="{{ user.homedir }}" required>
+                            <label for="uid" class="form-label">UID</label>
+                            <input type="text" class="form-control" id="uid" name="uid" 
+                                   value="{{ user.uid }}" required disabled>
                         </div>
 
                         <div class="mb-3">
-                            <label for="name" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="name" name="name" 
-                                   value="{{ user.name }}">
+                            <label for="gid" class="form-label">GID</label>
+                            <input type="text" class="form-control" id="gid" name="gid" 
+                                   value="{{ user.gid }}" required disabled>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="homedir" class="form-label">Directory</label>
+                            <input type="text" class="form-control" id="homedir" name="homedir" 
+                                   value="{{ user.homedir }}" required>
                         </div>
                     </div>
     
                     <!-- Second column -->
                     <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ user.name }}">
+                        </div>
+
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone</label>
                             <input type="text" class="form-control" id="phone" name="phone" 

@@ -293,6 +293,8 @@ def logout():
 def create_user():
     if request.method == 'POST':
         try:
+            uid = int(request.form.get('uid', 1000))
+            gid = int(request.form.get('gid', 1000))
             username = request.form.get('username')
             password = request.form.get('password')
             confirm_password = request.form.get('confirm_password')
@@ -308,15 +310,15 @@ def create_user():
                                        error_message='Passwords do not match')
 
             new_user = User(
+                uid=uid,
+                gid=gid,
                 username=username,
                 homedir=homedir,
                 name=name if name else None,
                 phone=phone if phone else None,
                 email=email if email else None,
                 enabled=enabled,
-                uid=None,
-                gid=None,
-                shell=None,
+                shell='/bin/bash', # default place holder
                 last_accessed=None
             )
             new_user.set_password(password)
