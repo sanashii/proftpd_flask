@@ -93,6 +93,44 @@ $(document).ready(function() {
             updateURLParams(param, value);
         }
     });
+
+    // Handle nested dropdowns
+    $('.dropdown-submenu > a.dropdown-toggle').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Close all other submenus
+        $('.dropdown-submenu .dropdown-menu').not($(this).next()).hide();
+        
+        // Toggle this submenu
+        $(this).next('.dropdown-menu').toggle();
+        
+        // Add/remove show class
+        $(this).toggleClass('show');
+    });
+
+    // Handle group selection
+    $('.dropdown-submenu .dropdown-item').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const value = $(this).data('value');
+        if (value) {
+            updateURLParams('filter_by', value);
+            
+            // Hide all submenus
+            $('.dropdown-submenu .dropdown-menu').hide();
+            $('.dropdown-toggle').removeClass('show');
+        }
+    });
+
+    // Close submenus when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.dropdown-submenu').length) {
+            $('.dropdown-submenu .dropdown-menu').hide();
+            $('.dropdown-toggle').removeClass('show');
+        }
+    });
     
     const userName = urlParams.get('username');
     if (userName) {

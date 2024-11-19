@@ -11,6 +11,28 @@
     background-color: #5da39c;
 }
 
+/* Add to your CSS file */
+.dropdown-submenu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    display: none;
+    min-width: 160px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.dropdown-item.show + .dropdown-submenu {
+    display: block;
+}
+
+/* Indicate items with submenus */
+.dropdown-toggle::after {
+    display: inline-block;
+    margin-left: 0.5em;
+    vertical-align: middle;
+}
+
 .table-responsive {
     position: relative;
     transition: opacity 0.3s;

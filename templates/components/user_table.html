@@ -35,6 +35,20 @@
                     <li><a class="dropdown-item" href="#" data-value="inactive">Inactive</a></li>
                     <li><a class="dropdown-item" href="#" data-value="disabled">Disabled</a></li>
                     <li><a class="dropdown-item" href="#" data-value="all">All</a></li>
+                    <li>
+                        <a class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            Groups 
+                        </a>
+                        <ul class="dropdown-menu dropdown-submenu">
+                            {% for group in groups %}
+                            <li>
+                                <a class="dropdown-item" href="#" data-value="group_{{ group.gid }}">
+                                    {{ group.groupname }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
                 </ul>
             </div>
     

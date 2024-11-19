@@ -243,6 +243,7 @@ def home():
     sort_by = request.args.get('sort_by', 'username')
     filter_status = request.args.get('filter_by', 'all')
     search_query = request.args.get('search', '')
+    groups = Group.query.all()
     
     query = get_filtered_sorted_users(sort_by, filter_status, search_query)
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
@@ -257,7 +258,8 @@ def home():
     #! CURRENT ISSUE: sorting & filtering works but after about 3 seconds, the doubling nav bar  issue resurfaces and only disappears on refresh
     return render_template('home.html',
                          users=pagination.items,
-                         pagination=pagination)
+                         pagination=pagination,
+                         groups=groups)
 
 
 # manage user component
@@ -329,7 +331,15 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
         query = query.order_by(User.email)
     elif sort_by == 'homedir':
         query = query.order_by(User.homedir)
-
+    
+    # Add group filtering
+    if filter_status.startswith('group_'):
+        try:
+            group_id = int(filter_status.split('_')[1])
+            query = query.filter(User.gid == group_id)
+        except (IndexError, ValueError):
+            pass
+        
     return query
 
 # for logout button
