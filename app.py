@@ -12,6 +12,9 @@ import binascii
 import random
 import string
 
+from flask_ldap3_login import LDAP3LoginManager
+from flask_login import LoginManager, login_user, UserMixin, current_user
+
 app = Flask(__name__)
 
 @app.template_filter('datetime')
@@ -25,11 +28,26 @@ def format_datetime(value):
             return value
     return value.strftime('%Y-%m-%d %H:%M:%S')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+
 # app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://proftpd_stage:####@FXCEBFS0304?charset=utf8"
 # app.config['SECRET_KEY'] = '####'
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://proftpd_stage:C{7#iUoNc82@FXCEBFS0304/proftpd?charset=utf8"
 app.config['SECRET_KEY'] = 'smiskisecretkey1738dummydingdong'
+
+# LDAP Config
+ldap_manager = LDAP3LoginManager(app)
+login_manager = LoginManager(app)
+
+app.config['LDAP_HOST'] = 'ldap://your-ldap-server'
+app.config['LDAP_PORT'] = 389
+app.config['LDAP_USE_SSL'] = False
+app.config['LDAP_BASE_DN'] = 'dc=traxtech,dc=com'
+app.config['LDAP_USER_DN'] = 'ou=users'
+app.config['LDAP_GROUP_DN'] = 'ou=groups'
+app.config['LDAP_USER_RDN_ATTR'] = 'uid'
+app.config['LDAP_USER_LOGIN_ATTR'] = 'mail'
+app.config['LDAP_BIND_USER_DN'] = None
+app.config['LDAP_BIND_USER_PASSWORD'] = None
 
 # Session(app)
 db = SQLAlchemy(app)
@@ -151,6 +169,23 @@ class XferLog(db.Model):
 # except Exception as e:
 #     print(f"Error connecting to database: {e}")
 
+@login_manager.user_loader
+def load_user(id):
+    return User.query.get(id)
+
+@ldap_manager.save_user
+def save_user(dn, username, data, memberships):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        user = User(
+            username=username,
+            email=data.get('mail', [None])[0],
+            name=data.get('displayName', [None])[0]
+        )
+        db.session.add(user)
+        db.session.commit()
+    return user
+
 @app.route('/', methods=['GET', 'POST'])
 def login():
     # Clear any existing session data
@@ -160,12 +195,20 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
 
-        if username == "admin" and password == "admin":
+        # LDAP login for domain users
+        if '@traxtech.com' in username:
+            result = ldap_manager.authenticate(username, password)
+            if result.status:
+                login_user(result.user)
+                return redirect(url_for('home'))
+        #* TEMP ONLY: Local admin fallback
+        elif username == "admin" and password == "admin":
             session["username"] = "admin"
             return redirect(url_for('home'))
-        return render_template("login.html", show_modal='incorrect_password')
-
-    return render_template("login.html")
+            
+        return render_template('login.html', show_modal='incorrect_password')
+        
+    return render_template('login.html')
 
 
 @app.route('/password_reset', methods=['GET', 'POST']) #! NOTE: to be updated / changed when using the actual trax domain
@@ -211,7 +254,7 @@ def home():
     #                          users=pagination.items,
     #                          pagination=pagination)
 
-    # Return full page for initial load
+    # ! CURRENT ISSUE: sorting & filtering works but after about 3 seconds, the doubling nav bar  issue resurfaces and only disappears on refresh
     return render_template('home.html',
                          users=pagination.items,
                          pagination=pagination)
