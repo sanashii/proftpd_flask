@@ -35,19 +35,19 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://proftpd_stage:C{
 app.config['SECRET_KEY'] = 'smiskisecretkey1738dummydingdong'
 
 # LDAP Config
-ldap_manager = LDAP3LoginManager(app)
-login_manager = LoginManager(app)
+# ldap_manager = LDAP3LoginManager(app)
+# login_manager = LoginManager(app)
 
-app.config['LDAP_HOST'] = 'ldap://your-ldap-server'
-app.config['LDAP_PORT'] = 389
-app.config['LDAP_USE_SSL'] = False
-app.config['LDAP_BASE_DN'] = 'dc=traxtech,dc=com'
-app.config['LDAP_USER_DN'] = 'ou=users'
-app.config['LDAP_GROUP_DN'] = 'ou=groups'
-app.config['LDAP_USER_RDN_ATTR'] = 'uid'
-app.config['LDAP_USER_LOGIN_ATTR'] = 'mail'
-app.config['LDAP_BIND_USER_DN'] = None
-app.config['LDAP_BIND_USER_PASSWORD'] = None
+# app.config['LDAP_HOST'] = 'ldap://your-ldap-server'
+# app.config['LDAP_PORT'] = 389
+# app.config['LDAP_USE_SSL'] = False
+# app.config['LDAP_BASE_DN'] = 'dc=traxtech,dc=com'
+# app.config['LDAP_USER_DN'] = 'ou=users'
+# app.config['LDAP_GROUP_DN'] = 'ou=groups'
+# app.config['LDAP_USER_RDN_ATTR'] = 'uid'
+# app.config['LDAP_USER_LOGIN_ATTR'] = 'mail'
+# app.config['LDAP_BIND_USER_DN'] = None
+# app.config['LDAP_BIND_USER_PASSWORD'] = None
 
 # Session(app)
 db = SQLAlchemy(app)
@@ -169,22 +169,22 @@ class XferLog(db.Model):
 # except Exception as e:
 #     print(f"Error connecting to database: {e}")
 
-@login_manager.user_loader
-def load_user(id):
-    return User.query.get(id)
+# @login_manager.user_loader
+# def load_user(id):
+#     return User.query.get(id)
 
-@ldap_manager.save_user
-def save_user(dn, username, data, memberships):
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        user = User(
-            username=username,
-            email=data.get('mail', [None])[0],
-            name=data.get('displayName', [None])[0]
-        )
-        db.session.add(user)
-        db.session.commit()
-    return user
+# @ldap_manager.save_user
+# def save_user(dn, username, data, memberships):
+#     user = User.query.filter_by(username=username).first()
+#     if not user:
+#         user = User(
+#             username=username,
+#             email=data.get('mail', [None])[0],
+#             name=data.get('displayName', [None])[0]
+#         )
+#         db.session.add(user)
+#         db.session.commit()
+#     return user
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -195,14 +195,14 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
 
-        # LDAP login for domain users
-        if '@traxtech.com' in username:
-            result = ldap_manager.authenticate(username, password)
-            if result.status:
-                login_user(result.user)
-                return redirect(url_for('home'))
+        # # LDAP login for domain users
+        # if '@traxtech.com' in username:
+        #     result = ldap_manager.authenticate(username, password)
+        #     if result.status:
+        #         login_user(result.user)
+        #         return redirect(url_for('home'))
         #* TEMP ONLY: Local admin fallback
-        elif username == "admin" and password == "admin":
+        if username == "admin" and password == "admin": #elif
             session["username"] = "admin"
             return redirect(url_for('home'))
             
@@ -254,7 +254,7 @@ def home():
     #                          users=pagination.items,
     #                          pagination=pagination)
 
-    # ! CURRENT ISSUE: sorting & filtering works but after about 3 seconds, the doubling nav bar  issue resurfaces and only disappears on refresh
+    #! CURRENT ISSUE: sorting & filtering works but after about 3 seconds, the doubling nav bar  issue resurfaces and only disappears on refresh
     return render_template('home.html',
                          users=pagination.items,
                          pagination=pagination)
@@ -292,7 +292,6 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
         )
 
     # Apply status filter
-    # Apply status filter
     if filter_status != 'all':
         now = func.now()
         seven_days_ago = now - timedelta(days=7)
@@ -302,7 +301,7 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
             query = query.filter(
                 User.enabled == True,
                 User.last_accessed.isnot(None),
-                User.last_accessed >= seven_days_ago
+                User.last_accessed <= seven_days_ago
             )
         elif filter_status == 'inactive':
             query = query.filter(
@@ -310,8 +309,8 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
                 db.or_(
                     User.last_accessed.is_(None),
                     db.and_(
-                        User.last_accessed < seven_days_ago,
-                        User.last_accessed > five_months_ago  # Changed from <= to >
+                        User.last_accessed > seven_days_ago,
+                        User.last_accessed < five_months_ago 
                     )
                 )
             )
@@ -319,7 +318,7 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
             query = query.filter(
                 db.or_(
                     User.enabled == False,  # Manually disabled
-                    User.last_accessed <= five_months_ago  # Changed from > to <=
+                    User.last_accessed >= five_months_ago 
                 )
             )
 

@@ -50,13 +50,11 @@ $(document).ready(function() {
             }
         });
     }
-});
 
-$(document).ready(function() {
     // for toggling the dropdown menu in user_table
-    var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-    dropdownElementList.map(function (dropdownToggleEl) {
-        return new bootstrap.Dropdown(dropdownToggleEl);
+    const dropdowns = document.querySelectorAll('.dropdown-toggle');
+    dropdowns.forEach(dropdown => {
+        new bootstrap.Dropdown(dropdown);
     });
     
     // Handle 'Manage Users' click event
@@ -83,58 +81,67 @@ $(document).ready(function() {
         loadManageUser(userName);
     });
 
-    // Check if there's a username in the URL and load the manage user content
-    const urlParams = new URLSearchParams(window.location.search);
+    // Handle sort dropdown clicks
+    $(document).on('click', '.dropdown-item', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const param = $(this).closest('.dropdown').data('param-type');
+        const value = $(this).data('value');
+        
+        if (param && value) {
+            updateURLParams(param, value);
+        }
+    });
+    
     const userName = urlParams.get('username');
     if (userName) {
         loadManageUser(userName);
     }
 
-    $(document).ready(function() {
-        // Initialize delete modal
-        const deleteUserModalElement = document.getElementById('deleteUserModal');
-        let deleteUserModal;
-        if (deleteUserModalElement) {
-            deleteUserModal = new bootstrap.Modal(deleteUserModalElement);
+    // Initialize delete user modal
+    const deleteUserModalElement = document.getElementById('deleteUserModal');
+    let deleteUserModal;
+    if (deleteUserModalElement) {
+        deleteUserModal = new bootstrap.Modal(deleteUserModalElement);
+    }
+
+    // Handle delete button click
+    $(document).on('click', '#deleteUserBtn', function(e) {
+        e.preventDefault();
+        if (deleteUserModal) {
+            deleteUserModal.show();
         }
-    
-        // Handle delete button click
-        $(document).on('click', '#deleteUserBtn', function(e) {
-            e.preventDefault();
-            if (deleteUserModal) {
-                deleteUserModal.show();
-            }
-        });
-    
-        // Handle delete confirmation
-        $(document).on('click', '#confirmDeleteUser', function(e) {
-            e.preventDefault();
-            const username = $('input[name="username"]').val();
-    
-            $.ajax({
-                url: `/delete_user/${encodeURIComponent(username)}`,
-                type: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                success: function(response) {
-                    if (deleteUserModal) {
-                        deleteUserModal.hide();
-                    }
-                    if (response.success) {
-                        window.location.href = '/home';
-                    } else {
-                        alert(response.message || 'Error deleting user');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    if (deleteUserModal) {
-                        deleteUserModal.hide();
-                    }
-                    alert('Error deleting user: ' + (error || xhr.statusText));
-                    console.error('Error deleting user:', error);
+    });
+
+    // Handle delete confirmation
+    $(document).on('click', '#confirmDeleteUser', function(e) {
+        e.preventDefault();
+        const username = $('input[name="username"]').val();
+
+        $.ajax({
+            url: `/delete_user/${encodeURIComponent(username)}`,
+            type: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                if (deleteUserModal) {
+                    deleteUserModal.hide();
                 }
-            });
+                if (response.success) {
+                    window.location.href = '/home';
+                } else {
+                    alert(response.message || 'Error deleting user');
+                }
+            },
+            error: function(xhr, status, error) {
+                if (deleteUserModal) {
+                    deleteUserModal.hide();
+                }
+                alert('Error deleting user: ' + (error || xhr.statusText));
+                console.error('Error deleting user:', error);
+            }
         });
     });
 });
@@ -217,7 +224,6 @@ function updateURLParams(param, value) {
     const cachedContent = pageCache.get(cacheKey);
     if (cachedContent) {
         $('.table-responsive').html(cachedContent);
-        updateDropdownText(param, value);
         history.pushState(null, '', `?${url.searchParams.toString()}`);
         return;
     }
@@ -228,19 +234,42 @@ function updateURLParams(param, value) {
         url: '/home',
         data: url.searchParams.toString(),
         method: 'GET',
-        // headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Cache-Control': 'no-cache'
+        },
         success: function(response) {
-            const content = $(response).find('.table-responsive').html();
-            $('.table-responsive').html(content);
+            const temp = document.createElement('div');
+            temp.innerHTML = response;
             
-            // Cache the new content
-            pageCache.set(cacheKey, content);
+            // Get components in correct order
+            const navbarContent = temp.querySelector('#userTableNavBar');
+            const tableContent = temp.querySelector('table');
+            const paginationContent = temp.querySelector('#userTablePagination');
             
-            // Update dropdown text
-            updateDropdownText(param, value);
+            // Construct content maintaining order
+            const finalContent = document.createElement('div');
+            if (navbarContent) finalContent.appendChild(navbarContent.cloneNode(true));
+            if (tableContent) finalContent.appendChild(tableContent.cloneNode(true));
+            if (paginationContent) finalContent.appendChild(paginationContent.cloneNode(true));
+            
+            // Cache the content
+            pageCache.set(cacheKey, finalContent.innerHTML);
+            
+            // Update DOM
+            $('.table-responsive').html(finalContent.innerHTML);
+            
+            // Reinitialize dropdowns
+            const dropdowns = document.querySelectorAll('.dropdown-toggle');
+            dropdowns.forEach(dropdown => {
+                new bootstrap.Dropdown(dropdown);
+            });
             
             history.pushState(null, '', `?${url.searchParams.toString()}`);
+            updateDropdownText(param, value);
             $('.table-responsive').removeClass('loading');
+            
+            $(temp).remove();
         },
         error: function(error) {
             console.error('Error updating content:', error);
@@ -259,16 +288,12 @@ function updateDropdownText(param, value) {
 
 // Clear cache when filters change
 $('#sortDropdown, #filterDropdown').on('click', 'a', function() {
-    clearCache();
+    pageCache.clear();
 });
 
 $('input[name="search"]').on('input', function() {
-    clearCache();
-});
-
-function clearCache() {
     pageCache.clear();
-}
+});
 
 // for card component
 function fetchUserStatusCounts() {
@@ -286,7 +311,7 @@ function fetchUserStatusCounts() {
     });
 }
 
-// for paginaction back and forward
+// for pagination back and forward
 window.addEventListener('popstate', function() {
     loadContent(window.location.pathname + window.location.search);
 });
