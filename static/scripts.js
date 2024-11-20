@@ -377,9 +377,12 @@ function initBulkOperations() {
     });
 
     // Bulk actions
-    $('.bulk-action').on('click', function() {
+    $(document).on('click', '.bulk-action', function() {
         const action = $(this).data('action');
         if (selectedUsers.size === 0) return;
+
+        // loading state
+        $('.table-responsive').addClass('loading');
 
         $.ajax({
             url: `/bulk_${action}`,
@@ -391,17 +394,61 @@ function initBulkOperations() {
                     selectedUsers.clear();
                     location.reload();
                 }
+            },
+            complete: function() {
+                $('.table-responsive').removeClass('loading');
             }
         });
     });
 
-    // Export functionality
-    $('#exportUsers').on('click', function() {
+    // Handle bulk group assignment
+    $(document).on('click', '.bulk-group', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         if (selectedUsers.size === 0) return;
-        window.location.href = `/export_users?users=${Array.from(selectedUsers).join(',')}`;
+        
+        const groupId = $(this).data('gid');
+        
+        // Add loading state
+        $('.table-responsive').addClass('loading');
+
+        $.ajax({
+            url: '/bulk_assign_group',
+            method: 'POST',
+            data: JSON.stringify({
+                users: Array.from(selectedUsers),
+                group_id: groupId
+            }),
+            contentType: 'application/json',
+            success: function(response) {
+                if (response.success) {
+                    selectedUsers.clear();
+                    location.reload();
+                } else {
+                    alert(response.message || 'Error assigning group');
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error assigning group: ' + error);
+            },
+            complete: function() {
+                $('.table-responsive').removeClass('loading');
+            }
+        });
     });
 
-    // Import functionality
+    // Update export with loading state
+    $('#exportUsers').on('click', function() {
+        if (selectedUsers.size === 0) return;
+        $('.table-responsive').addClass('loading');
+        window.location.href = `/export_users?users=${Array.from(selectedUsers).join(',')}`;
+        setTimeout(() => {
+            $('.table-responsive').removeClass('loading');
+        }, 1000);
+    });
+
+    // Update import with loading state
     $('#importUsers').on('click', function() {
         const input = document.createElement('input');
         input.type = 'file';
@@ -410,6 +457,8 @@ function initBulkOperations() {
             const file = e.target.files[0];
             const formData = new FormData();
             formData.append('file', file);
+            
+            $('.table-responsive').addClass('loading');
             
             $.ajax({
                 url: '/import_users',
@@ -421,6 +470,9 @@ function initBulkOperations() {
                     if (response.success) {
                         location.reload();
                     }
+                },
+                complete: function() {
+                    $('.table-responsive').removeClass('loading');
                 }
             });
         };
