@@ -11,7 +11,33 @@
     background-color: #5da39c;
 }
 
-/* Add to your CSS file */
+
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 12px;
+    width: 100%;
+}
+
+.toolbar-button-group {
+    display: flex;          
+    align-items: center;     
+    gap: 8px;              
+    width: auto;            
+    margin: 0 15px;         
+}
+
+.toolbar-button-group .btn {
+    white-space: nowrap;   
+    padding: 0.25rem 0.75rem;  
+}
+
+.toolbar-button-group .dropdown {
+    display: inline-flex;
+    align-items: center;
+}
+
 .dropdown-submenu {
     position: absolute;
     left: 100%;
@@ -26,7 +52,6 @@
     display: block;
 }
 
-/* Indicate items with submenus */
 .dropdown-toggle::after {
     display: inline-block;
     margin-left: 0.5em;
