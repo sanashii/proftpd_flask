@@ -381,7 +381,7 @@ function initBulkOperations() {
         const action = $(this).data('action');
         if (selectedUsers.size === 0) return;
 
-        // loading state
+        // Add loading state
         $('.table-responsive').addClass('loading');
 
         $.ajax({
@@ -392,10 +392,12 @@ function initBulkOperations() {
             success: function(response) {
                 if (response.success) {
                     selectedUsers.clear();
-                    location.reload();
+                    // Don't remove loading state before reload
+                    window.location.reload();
                 }
             },
-            complete: function() {
+            error: function() {
+                // Only remove loading on error
                 $('.table-responsive').removeClass('loading');
             }
         });
@@ -410,7 +412,6 @@ function initBulkOperations() {
         
         const groupId = $(this).data('gid');
         
-        // Add loading state
         $('.table-responsive').addClass('loading');
 
         $.ajax({
@@ -424,16 +425,16 @@ function initBulkOperations() {
             success: function(response) {
                 if (response.success) {
                     selectedUsers.clear();
-                    location.reload();
+                    // Don't remove loading state before reload
+                    window.location.reload();
                 } else {
+                    $('.table-responsive').removeClass('loading');
                     alert(response.message || 'Error assigning group');
                 }
             },
             error: function(xhr, status, error) {
-                alert('Error assigning group: ' + error);
-            },
-            complete: function() {
                 $('.table-responsive').removeClass('loading');
+                alert('Error assigning group: ' + error);
             }
         });
     });
