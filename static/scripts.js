@@ -32,6 +32,7 @@ const pageCache = {
 
 $(document).ready(function() {
     fetchUserStatusCounts();
+    initBulkOperations();
 
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('user_id');
@@ -262,6 +263,8 @@ function updateURLParams(param, value) {
     const cachedContent = pageCache.get(cacheKey);
     if (cachedContent) {
         $('.table-responsive').html(cachedContent);
+        restoreCheckboxStates();
+        updateBulkActionBar();
         history.pushState(null, '', `?${url.searchParams.toString()}`);
         return;
     }
@@ -282,12 +285,14 @@ function updateURLParams(param, value) {
             
             // Get components in correct order
             const navbarContent = temp.querySelector('#userTableNavBar');
+            const bulkActionsBar = temp.querySelector('#bulkActionsBar');  // Add this
             const tableContent = temp.querySelector('table');
             const paginationContent = temp.querySelector('#userTablePagination');
             
             // Construct content maintaining order
             const finalContent = document.createElement('div');
             if (navbarContent) finalContent.appendChild(navbarContent.cloneNode(true));
+            if (bulkActionsBar) finalContent.appendChild(bulkActionsBar.cloneNode(true));  // Add this
             if (tableContent) finalContent.appendChild(tableContent.cloneNode(true));
             if (paginationContent) finalContent.appendChild(paginationContent.cloneNode(true));
             
@@ -297,11 +302,18 @@ function updateURLParams(param, value) {
             // Update DOM
             $('.table-responsive').html(finalContent.innerHTML);
             
+            // Restore selections and update toolbar
+            restoreCheckboxStates();
+            updateBulkActionBar();
+
             // Reinitialize dropdowns
             const dropdowns = document.querySelectorAll('.dropdown-toggle');
             dropdowns.forEach(dropdown => {
                 new bootstrap.Dropdown(dropdown);
             });
+            
+            // Reinitialize bulk operations event handlers
+            initBulkOperations();  // Add this
             
             history.pushState(null, '', `?${url.searchParams.toString()}`);
             updateDropdownText(param, value);
@@ -322,6 +334,116 @@ function updateDropdownText(param, value) {
     } else if (param === 'filter_by') {
         $('#filterDropdown').text(`Filter by: ${value.charAt(0).toUpperCase() + value.slice(1)}`);
     }
+}
+
+// Add selectedUsers Set to store selections across pages
+const selectedUsers = new Set();
+
+function initBulkOperations() {
+    // Initialize bulk operations on page load
+    updateBulkActionBar();
+    restoreCheckboxStates();
+
+    // Select all functionality
+    $('#selectAll').on('change', function() {
+        const isChecked = $(this).prop('checked');
+        $('.user-select').each(function() {
+            const username = $(this).val();
+            $(this).prop('checked', isChecked);
+            if (isChecked) {
+                selectedUsers.add(username);
+            } else {
+                selectedUsers.delete(username);
+            }
+        });
+        updateBulkActionBar();
+    });
+
+    // Individual select
+    $(document).on('change', '.user-select', function(e) {
+        e.stopPropagation(); // Prevent row click
+        const username = $(this).val();
+        if ($(this).prop('checked')) {
+            selectedUsers.add(username);
+        } else {
+            selectedUsers.delete(username);
+        }
+        updateBulkActionBar();
+    });
+
+    // Prevent row click when clicking checkbox
+    $(document).on('click', '.user-select', function(e) {
+        e.stopPropagation();
+    });
+
+    // Bulk actions
+    $('.bulk-action').on('click', function() {
+        const action = $(this).data('action');
+        if (selectedUsers.size === 0) return;
+
+        $.ajax({
+            url: `/bulk_${action}`,
+            method: 'POST',
+            data: JSON.stringify({ users: Array.from(selectedUsers) }),
+            contentType: 'application/json',
+            success: function(response) {
+                if (response.success) {
+                    selectedUsers.clear();
+                    location.reload();
+                }
+            }
+        });
+    });
+
+    // Export functionality
+    $('#exportUsers').on('click', function() {
+        if (selectedUsers.size === 0) return;
+        window.location.href = `/export_users?users=${Array.from(selectedUsers).join(',')}`;
+    });
+
+    // Import functionality
+    $('#importUsers').on('click', function() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.csv';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            $.ajax({
+                url: '/import_users',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                }
+            });
+        };
+        input.click();
+    });
+}
+
+function updateBulkActionBar() {
+    const selectedCount = selectedUsers.size;
+    $('#selectedCount').text(selectedCount);
+    $('#bulkActionsBar').toggleClass('d-none', !selectedCount);
+
+    // Update selectAll checkbox state
+    const allSelected = $('.user-select').length > 0 && 
+                       $('.user-select:not(:checked)').length === 0;
+    $('#selectAll').prop('checked', allSelected);
+}
+
+function restoreCheckboxStates() {
+    $('.user-select').each(function() {
+        const username = $(this).val();
+        $(this).prop('checked', selectedUsers.has(username));
+    });
 }
 
 // Clear cache when filters change

@@ -57,9 +57,37 @@
         </form>
     </nav>
 
+    <div id="bulkActionsBar" class="bg-light p-2 mb-3 d-none">
+        <div class="d-flex align-items-center">
+            <span class="me-2"><span id="selectedCount">0</span> users selected</span>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-success bulk-action" data-action="enable">Enable</button>
+                <button class="btn btn-sm btn-warning bulk-action" data-action="disable">Disable</button>
+                <button class="btn btn-sm btn-danger bulk-action disabled" data-action="delete">Delete</button>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        Assign Group
+                    </button>
+                    <ul class="dropdown-menu">
+                        {% for group in groups %}
+                        <li><a class="dropdown-item bulk-group" data-gid="{{ group.gid }}">{{ group.groupname }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="ms-auto">
+                <button class="btn btn-sm btn-primary" id="exportUsers">Export Selected</button>
+                <button class="btn btn-sm btn-info" id="importUsers">Import Users</button>
+            </div>
+        </div>
+    </div>
+
     <table class="table table-hover table-sm">
         <thead>
         <tr>
+            <th>
+                <input type="checkbox" id="selectAll" class="form-check-input">
+            </th>
             <th scope="col">Username</th>
             <th scope="col">Email</th>
             <th scope="col">Home Directory</th>
@@ -70,6 +98,10 @@
             {% if users %}
                 {% for user in users %}
                 <tr onclick=window.location.href="{{ url_for('manage_user', username=user.username) }}" style="cursor: pointer;">
+                    <td onclick="event.stopPropagation()">
+                        <input type="checkbox" class="form-check-input user-select" 
+                            value="{{ user.username }}">
+                    </td>
                     <td>{{ user.username }}</td>
                     <td>{{ user.email or 'N/A' }}</td>
                     <td>{{ user.homedir }}</td>

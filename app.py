@@ -1,5 +1,7 @@
 # !/usr/bin/env python
-from flask import Flask, jsonify, render_template, url_for, request, redirect, session
+import csv
+from io import StringIO, TextIOWrapper
+from flask import Flask, Response, jsonify, render_template, url_for, request, redirect, session
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -508,6 +510,58 @@ def delete_user(username):
             'message': 'Error deleting user',
             'show_modal': 'error'
         })
+
+@app.route('/bulk_enable', methods=['POST'])
+def bulk_enable():
+    users = request.json.get('users', [])
+    User.query.filter(User.username.in_(users)).update({User.enabled: True}, synchronize_session=False)
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/bulk_disable', methods=['POST'])
+def bulk_disable():
+    users = request.json.get('users', [])
+    User.query.filter(User.username.in_(users)).update({User.enabled: False}, synchronize_session=False)
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/export_users')
+def export_users():
+    users = request.args.get('users', '').split(',')
+    users_data = User.query.filter(User.username.in_(users)).all()
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['username', 'email', 'homedir', 'status'])
+    
+    for user in users_data:
+        writer.writerow([user.username, user.email, user.homedir, user.computed_status])
+    
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=users.csv'}
+    )
+
+@app.route('/import_users', methods=['POST'])
+def import_users():
+    if 'file' not in request.files:
+        return jsonify({'success': False})
+        
+    file = request.files['file']
+    reader = csv.DictReader(TextIOWrapper(file))
+    
+    for row in reader:
+        user = User(
+            username=row['username'],
+            email=row['email'],
+            homedir=row['homedir'],
+            enabled=True
+        )
+        db.session.add(user)
+    
+    db.session.commit()
+    return jsonify({'success': True})
 
 if __name__ == "__main__":
     app.run(debug=True)
