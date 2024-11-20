@@ -565,22 +565,45 @@ def export_users():
 @app.route('/import_users', methods=['POST'])
 def import_users():
     if 'file' not in request.files:
-        return jsonify({'success': False})
+        return jsonify({'success': False, 'message': 'No file uploaded'})
         
-    file = request.files['file']
-    reader = csv.DictReader(TextIOWrapper(file))
-    
-    for row in reader:
-        user = User(
-            username=row['username'],
-            email=row['email'],
-            homedir=row['homedir'],
-            enabled=True
-        )
-        db.session.add(user)
-    
-    db.session.commit()
-    return jsonify({'success': True})
+    try:
+        file = request.files['file']
+        reader = csv.DictReader(TextIOWrapper(file))
+        
+        # Password generation function (same as in create_user)
+        def generate_password(length=12):
+            chars = string.ascii_letters + string.digits + string.punctuation
+            return ''.join(random.choice(chars) for _ in range(length))
+        
+        for row in reader:
+            # Generate random password
+            random_password = generate_password()
+            
+            user = User(
+                username=row['username'],
+                uid=int(row['uid']) if row['uid'] else 1000, # preset to 1000 just like in user creation
+                gid=int(row['gid']) if row['gid'] else 1000, # preset to 1000 just like in user creation
+                homedir=row['homedir'] if row['homedir'] else None,
+                shell=row['shell'] if row['shell'] else None,
+                enabled=row['enabled'].lower() == 'true' if row['enabled'] else True,
+                name=row['name'] if row['name'] else None,
+                phone=row['phone'] if row['phone'] else None,
+                email=row['email'] if row['email'] else None
+            )
+            # Use existing set_password method which includes hashing
+            user.set_password(random_password)
+            db.session.add(user)
+            
+            # You might want to log or store the generated passwords somewhere
+            print(f"Generated password for {row['username']}: {random_password}")
+        
+        db.session.commit()
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
 
 if __name__ == "__main__":
     app.run(debug=True)

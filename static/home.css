@@ -11,6 +11,18 @@
     background-color: #5da39c;
 }
 
+.btn-info{
+    color: white;
+    border: none;
+    height: 38px;
+}
+
+.btn-info:hover {
+    background-color: #18879b;
+    color: white;
+    border: none;
+}
+
 
 .button-group {
     display: flex;

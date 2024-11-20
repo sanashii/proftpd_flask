@@ -469,11 +469,18 @@ function initBulkOperations() {
                 contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        location.reload();
+                        // Don't remove loading state before reload
+                        window.location.reload();
+                    } else {
+                        // Only remove loading on error
+                        $('.table-responsive').removeClass('loading');
+                        alert(response.message || 'Error importing users');
                     }
                 },
-                complete: function() {
+                error: function(xhr, status, error) {
+                    // Only remove loading on error
                     $('.table-responsive').removeClass('loading');
+                    alert('Error importing users: ' + error);
                 }
             });
         };

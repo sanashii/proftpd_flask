@@ -53,7 +53,8 @@
             </div>
     
             <input class="form-control mr-sm-5" type="search" placeholder="Enter username" aria-label="Search" name="search" value="{{ request.args.get('search', '') }}">
-            <button class="btn btn-outline-success ms-2 me-3 my-2 my-sm-0" type="submit">Search</button>
+            <button class="btn btn-outline-success ms-2 me-2 my-2 my-sm-0" type="submit">Search</button>
+            <button type="button" class="btn btn-sm btn-info me-2 my-2 my-sm-0" id="importUsers">Import</button>
         </form>
     </nav>
 
@@ -77,7 +78,6 @@
             </div>
             <div class="ms-auto">
                 <button class="btn btn-sm btn-primary" id="exportUsers">Export Selected</button>
-                <button class="btn btn-sm btn-info" id="importUsers">Import Users</button>
             </div>
         </div>
     </div>
