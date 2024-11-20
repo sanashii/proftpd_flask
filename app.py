@@ -250,14 +250,6 @@ def home():
     query = get_filtered_sorted_users(sort_by, filter_status, search_query)
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
-    # # Check if it's an AJAX request
-    # if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-    #     # Return only the table content
-    #     return render_template('components/user_table.html',
-    #                          users=pagination.items,
-    #                          pagination=pagination)
-
-    #! CURRENT ISSUE: sorting & filtering works but after about 3 seconds, the doubling nav bar  issue resurfaces and only disappears on refresh
     return render_template('home.html',
                          users=pagination.items,
                          pagination=pagination,
@@ -525,6 +517,7 @@ def bulk_disable():
     db.session.commit()
     return jsonify({'success': True})
 
+#*NOTE: exported data consists of the selected users data based on the db itself (except their passwords)
 @app.route('/export_users')
 def export_users():
     users = request.args.get('users', '').split(',')
@@ -532,15 +525,41 @@ def export_users():
     
     output = StringIO()
     writer = csv.writer(output)
-    writer.writerow(['username', 'email', 'homedir', 'status'])
+    
+    headers = [
+        'username', 
+        'uid', 
+        'gid', 
+        'homedir', 
+        'shell', 
+        'enabled',
+        'name',
+        'phone',
+        'email',
+        'last_accessed'
+    ]
+    
+    writer.writerow(headers)
     
     for user in users_data:
-        writer.writerow([user.username, user.email, user.homedir, user.computed_status])
+        row = [
+            user.username,
+            user.uid,
+            user.gid,
+            user.homedir,
+            user.shell,
+            user.enabled,
+            user.name,
+            user.phone,
+            user.email,
+            user.last_accessed.strftime('%Y-%m-%d %H:%M:%S') if user.last_accessed else None
+        ]
+        writer.writerow(row)
     
     return Response(
         output.getvalue(),
         mimetype='text/csv',
-        headers={'Content-Disposition': 'attachment; filename=users.csv'}
+        headers={'Content-Disposition': f'attachment; filename=users_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'}
     )
 
 @app.route('/import_users', methods=['POST'])
