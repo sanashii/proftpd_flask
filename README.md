@@ -1,5 +1,112 @@
-`Table Structures`
+# ProFTPD Management System
 
+## Overview
+
+The ProFTPD Management System is a web application designed to manage users, groups, and their associated data for a ProFTPD server. It provides functionalities for creating, updating, deleting, and bulk managing users, as well as importing and exporting user data.
+
+## Features
+
+- User Management: Create, update, delete, and manage users.
+- Group Management: Assign users to groups and manage group memberships.
+- Bulk Operations: Perform bulk enable, disable, delete, and group assignment operations.
+- Import/Export: Import users from a CSV file and export user data to a CSV file.
+- Password Management: Generate and validate passwords with a built-in password generator.
+- User Status: View active, inactive, and disabled users.
+
+## Technologies Used
+
+- Flask: Web framework for Python.
+- SQLAlchemy: ORM for database interactions.
+- Bootstrap: Frontend framework for responsive design.
+- JavaScript: For dynamic interactions and AJAX requests.
+- MySQL: Database for storing user and group data.
+
+## Installation
+
+### Prerequisites
+
+- Python 3.x
+- MySQL server
+
+### Setup
+
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/sanashii/proftpd_flask
+    cd proftpd-flask
+    ```
+
+2. Create a virtual environment and activate it:
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows: venv\Scripts\activate
+    ```
+
+3. Install the required packages:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. Configure the database:
+- Update the `SQLALCHEMY_DATABASE_URI` in `app.py` with your MySQL database credentials.
+
+5. Initialize the database:
+    ```bash
+    flask db init
+    flask db migrate
+    flask db upgrade
+    ```
+
+6. Run the application:
+    ```bash
+    flask run
+    ```
+
+## Usage
+
+### User Management
+
+- Navigate to the home page to view the list of users.
+- Use the "Create User" button to add a new user.
+- Click on a user row to manage the user's details.
+- Use the bulk actions toolbar to perform bulk operations on selected users.
+
+### Group Management
+
+- Assign users to groups using the "Assign Group" dropdown in the bulk actions toolbar.
+
+### Importing
+
+- Use the "Import Users" button in the navigation bar to import users from a CSV file.
+<br><strong>NOTE:</strong> importing users via csv should have a structure of:<br>
+
+```csv
+username, uid, gid, homedir, shell, enabled, name, phone, email, last_accessed
+```
+
+- the `username` column should not be empty
+- the password is automatically generated upon every user in the csv file
+- optional fields (may be left empty): <br>
+`uid - Defaults to 1000 if empty`<br>
+`gid - Defaults to 1000 if empty`<br>
+`homedir - Sets to NULL if empty`<br>
+`shell - Sets to NULL if empty`<br>
+`enabled - Defaults to True if empty`<br>
+`name - Sets to NULL if empty`<br>
+`phone - Sets to NULL if empty`<br>
+`email - Sets to NULL if empty `<br>
+
+### Exporting
+
+- Use the "Export Selected" button in the bulk actions toolbar to export selected users to a CSV file.
+
+### Password Management
+
+- Use the password generator in the user creation and management forms to generate strong passwords.
+
+### Table Structures
+
+```MySQL
 CREATE TABLE `groups` (
   `groupname` varchar(128) NOT NULL,
   `gid` int(11) NOT NULL,
@@ -62,3 +169,4 @@ CREATE TABLE `xferlog` (
   KEY `localtime_idx` (`localtime`),
   CONSTRAINT `username` FOREIGN KEY (`username`) REFERENCES `users` (`username`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+```
