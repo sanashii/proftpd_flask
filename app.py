@@ -569,7 +569,11 @@ def import_users():
         
     try:
         file = request.files['file']
-        reader = csv.DictReader(TextIOWrapper(file))
+        # Use regular reader instead of DictReader
+        reader = csv.reader(TextIOWrapper(file))
+        
+        # Skip header row
+        next(reader)
         
         # Password generation function (same as in create_user)
         def generate_password(length=12):
@@ -577,27 +581,29 @@ def import_users():
             return ''.join(random.choice(chars) for _ in range(length))
         
         for row in reader:
+            if not row:  # Skip empty rows
+                continue
+                
             # Generate random password
             random_password = generate_password()
             
+            # Map columns by position
             user = User(
-                username=row['username'],
-                uid=int(row['uid']) if row['uid'] else 1000, # preset to 1000 just like in user creation
-                gid=int(row['gid']) if row['gid'] else 1000, # preset to 1000 just like in user creation
-                homedir=row['homedir'] if row['homedir'] else None,
-                shell=row['shell'] if row['shell'] else None,
-                enabled=row['enabled'].lower() == 'true' if row['enabled'] else True,
-                name=row['name'] if row['name'] else None,
-                phone=row['phone'] if row['phone'] else None,
-                email=row['email'] if row['email'] else None
+                username=row[0],
+                uid=int(row[1]) if row[1] else 1000,
+                gid=int(row[2]) if row[2] else 1000,
+                homedir=row[3] if row[3] else None,
+                shell=row[4] if row[4] else None,
+                enabled=row[5].lower() == 'true' if row[5] else True,
+                name=row[6] if row[6] else None,
+                phone=row[7] if row[7] else None,
+                email=row[8] if row[8] else None
             )
-            # Use existing set_password method which includes hashing
             user.set_password(random_password)
             db.session.add(user)
             
-            # You might want to log or store the generated passwords somewhere
-            print(f"Generated password for {row['username']}: {random_password}")
-        
+            print(f"Generated password for {row[0]}: {random_password}")
+            
         db.session.commit()
         return jsonify({'success': True})
         
