@@ -107,6 +107,17 @@ username, uid, gid, homedir, shell, enabled, name, phone, email, last_accessed
 ### Table Structures
 
 ```MySQL
+create table trax_users(
+    `username` varchar(50) not null,
+    `f_name` varchar(50),
+    `l_name` varchar(50),
+    `login_ldap` boolean,
+    `is_enabled` boolean,
+    `user_type` varchar(50),
+    `password` varchar(128) NOT NULL,
+    primary key(username)
+);
+
 CREATE TABLE `groups` (
   `groupname` varchar(128) NOT NULL,
   `gid` int(11) NOT NULL,

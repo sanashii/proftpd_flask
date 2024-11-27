@@ -57,6 +57,28 @@ users = {"admin": "admin"} # dummy acc for admin -- in actuality, ppl with the @
 
 migrate = Migrate(app, db)
 
+# Update TraxUser class in app.py
+class TraxUser(db.Model):
+    __tablename__ = 'trax_users'
+    
+    username = db.Column(db.String(50), primary_key=True, nullable=False)
+    f_name = db.Column(db.String(50))
+    l_name = db.Column(db.String(50))
+    login_ldap = db.Column(db.Boolean)
+    is_enabled = db.Column(db.Boolean)
+    user_type = db.Column(db.String(50))
+    password = db.Column(db.String(128), nullable=False)
+
+    def set_password(self, password):
+        # Generate salt and hash password
+        salt = ''.join(random.choice(string.ascii_lowercase) for x in range(2))
+        self.password = salt + binascii.hexlify(hashlib.md5((salt + password).encode('utf-8')).digest()).decode('utf-8').upper()
+
+    def check_password(self, password):
+        # Verify password
+        salt = self.password[:2]
+        return self.password == salt + binascii.hexlify(hashlib.md5((salt + password).encode('utf-8')).digest()).decode('utf-8').upper()
+
 class User(db.Model):
     __tablename__ = 'users'
     
@@ -190,47 +212,61 @@ class XferLog(db.Model):
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
-    # Clear any existing session data
     session.clear()
 
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
 
-        # # LDAP login for domain users
-        # if '@traxtech.com' in username:
+        # Check if user exists and is enabled in trax_users table
+        user = TraxUser.query.filter_by(username=username, is_enabled=True).first()
+        if not user:
+            return render_template('login.html', show_modal='error',
+                                                    error_message='Account does not exist. Please contact your administrator.')
+
+        # Check password
+        if user.check_password(password):
+            session["username"] = username
+            return redirect(url_for('home'))
+
+        # # LDAP authentication (for future)
+        # if user.login_ldap:
         #     result = ldap_manager.authenticate(username, password)
         #     if result.status:
         #         login_user(result.user)
         #         return redirect(url_for('home'))
-        #* TEMP ONLY: Local admin fallback
-        if username == "admin" and password == "admin": #elif
-            session["username"] = "admin"
-            return redirect(url_for('home'))
-            
-        return render_template('login.html', show_modal='incorrect_password')
-        
+        #     else:
+        #         return render_template('login.html', show_modal='no_access_to_filex')
+
+        return render_template('login.html', show_modal='error',
+                                            error_message='Incorrect password. Please try again.')
+
     return render_template('login.html')
 
 
-@app.route('/password_reset', methods=['GET', 'POST']) #! NOTE: to be updated / changed when using the actual trax domain
+@app.route('/password_reset', methods=['GET', 'POST'])
 def password_reset():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
+        username = request.form.get('username')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
 
-        if username not in users:
-            return render_template('password_reset.html', show_modal='user_not_found')
-        elif password != confirm_password:
-            return render_template('password_reset.html', show_modal='error', error_message='Passwords do not match')
-        else:
-            users[username] = password
-            return render_template('password_reset.html',
-                                   show_modal='success',
-                                   success_message='Your password has been successfully reset.',
-                                   success_redirect=url_for('login'),
-                                   success_button_text='Back to Login')
+        # Check if passwords match
+        if password != confirm_password:
+            return render_template('password_reset.html', show_modal='passwordMismatch')
+
+        # Check if user exists and is enabled
+        user = TraxUser.query.filter_by(username=username, is_enabled=True).first()
+        if not user:
+            return render_template('password_reset.html', show_modal='userNotFound')
+
+        # Update password
+        user.set_password(password)
+        db.session.commit()
+        return render_template('password_reset.html', show_modal='success',
+                                                        success_message='Password updated!',
+                                                        success_redirect=url_for('login'),
+                                                        success_button_text='Back to Login')
 
     return render_template('password_reset.html')
 

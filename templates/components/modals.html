@@ -61,13 +61,32 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="userNotFoundModalLabel">User Not Found</h5>
+                <h5 class="modal-title" id="userNotFoundModalLabel">Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                The username you entered does not exist in our system.
+                User not found or is disabled.
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- no access to filex modal -->
+<div class="modal fade" id="noAccessToFilexModal" tabindex="-1" aria-labelledby="noAccessToFilexModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="noAccessToFilexModalLabel">Login Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                No access to FileX.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
             </div>
         </div>
     </div>
@@ -78,13 +97,32 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="incorrectPasswordModalLabel">Incorrect Password</h5>
+                <h5 class="modal-title" id="incorrectPasswordModalLabel">Login Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 The password you entered is incorrect. Please try again.
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- password mismatch -->
+<div class="modal fade" id="passwordMismatchModal" tabindex="-1" aria-labelledby="passwordMismatchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="passwordMismatchModalLabel">Password Reset Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Passwords do not match.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
             </div>
         </div>
     </div>
@@ -111,6 +149,18 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const showModal = document.body.dataset.showModal;
+    console.log('Show modal:', showModal); // Debug line
+    
+    if (showModal) {
+        // Initialize and show the appropriate modal
+        const modalElement = document.getElementById(`${showModal}Modal`);
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+    }
+    
     var successModal = new bootstrap.Modal(document.getElementById('successModal'));
     var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
     var userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
