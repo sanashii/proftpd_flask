@@ -21,6 +21,8 @@
     }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <!-- success modal -->
 <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -149,34 +151,43 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded'); // Debug
+
+    // Initialize all modals
+    const modals = {};
+    document.querySelectorAll('.modal').forEach(modalElement => {
+        const modalId = modalElement.id.replace('Modal', '');
+        modals[modalId] = new bootstrap.Modal(modalElement);
+        console.log(`Initialized modal: ${modalId}`); // Debug
+    });
+
+    // Show modal based on show_modal attribute
     const showModal = document.body.dataset.showModal;
-    console.log('Show modal:', showModal); // Debug line
-    
-    if (showModal) {
-        // Initialize and show the appropriate modal
-        const modalElement = document.getElementById(`${showModal}Modal`);
-        if (modalElement) {
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-        }
+    console.log('Show modal:', showModal); // Debug
+
+    if (showModal && modals[showModal]) {
+        console.log(`Showing modal: ${showModal}`); // Debug
+        modals[showModal].show();
     }
-    
-    var successModal = new bootstrap.Modal(document.getElementById('successModal'));
-    var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-    var userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
-    var incorrectPasswordModal = new bootstrap.Modal(document.getElementById('incorrectPasswordModal'));
-    var deleteUserModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
-    
-    if (document.body.dataset.showModal === 'success') {
-        successModal.show();
-    } else if (document.body.dataset.showModal === 'error') {
-        errorModal.show();
-    } else if (document.body.dataset.showModal === 'user_not_found') {
-        userNotFoundModal.show();
-    } else if (document.body.dataset.showModal === 'incorrect_password') {
-        incorrectPasswordModal.show();
-    } else if (document.body.dataset.showModal === 'delete_user') {
-        deleteUserModal.show();
+
+    // Handle modal cleanup
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', function() {
+            document.querySelector('.modal-backdrop')?.remove();
+            document.body.classList.remove('modal-open');
+            document.body.removeAttribute('data-show-modal');
+        });
+    });
+
+    // Add close button to error modal if missing
+    const errorModal = document.getElementById('errorModal');
+    if (errorModal) {
+        const header = errorModal.querySelector('.modal-header');
+        if (!header.querySelector('.btn-close')) {
+            header.insertAdjacentHTML('beforeend', 
+                '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>'
+            );
+        }
     }
 });
 </script>
