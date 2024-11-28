@@ -42,19 +42,19 @@ app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookie over HTTPS
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 
 # LDAP Config
-# ldap_manager = LDAP3LoginManager(app)
-# login_manager = LoginManager(app)
+ldap_manager = LDAP3LoginManager(app)
+login_manager = LoginManager(app)
 
-# app.config['LDAP_HOST'] = 'ldap://your-ldap-server'
-# app.config['LDAP_PORT'] = 389
-# app.config['LDAP_USE_SSL'] = False
-# app.config['LDAP_BASE_DN'] = 'dc=traxtech,dc=com'
-# app.config['LDAP_USER_DN'] = 'ou=users'
-# app.config['LDAP_GROUP_DN'] = 'ou=groups'
+app.config['LDAP_HOST'] = 'ldap://dc0100.s03.filex.com'
+app.config['LDAP_PORT'] = 389
+app.config['LDAP_USE_SSL'] = False
+app.config['LDAP_BASE_DN'] = 'dc=filex,dc=com'
+app.config['LDAP_USER_DN'] = 'ou=Trax Personnel'
+app.config['LDAP_GROUP_DN'] = 'ou=Security Groups'
 # app.config['LDAP_USER_RDN_ATTR'] = 'uid'
 # app.config['LDAP_USER_LOGIN_ATTR'] = 'mail'
-# app.config['LDAP_BIND_USER_DN'] = None
-# app.config['LDAP_BIND_USER_PASSWORD'] = None
+app.config['LDAP_BIND_USER_DN'] = '###'
+app.config['LDAP_BIND_USER_PASSWORD'] = '###'
 
 Session(app)
 db = SQLAlchemy(app)
@@ -195,22 +195,22 @@ class XferLog(db.Model):
 # except Exception as e:
 #     print(f"Error connecting to database: {e}")
 
-# @login_manager.user_loader
-# def load_user(id):
-#     return User.query.get(id)
+@login_manager.user_loader
+def load_user(id):
+    return User.query.get(id)
 
-# @ldap_manager.save_user
-# def save_user(dn, username, data, memberships):
-#     user = User.query.filter_by(username=username).first()
-#     if not user:
-#         user = User(
-#             username=username,
-#             email=data.get('mail', [None])[0],
-#             name=data.get('displayName', [None])[0]
-#         )
-#         db.session.add(user)
-#         db.session.commit()
-#     return user
+@ldap_manager.save_user
+def save_user(dn, username, data, memberships):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        user = User(
+            username=username,
+            email=data.get('mail', [None])[0],
+            name=data.get('displayName', [None])[0]
+        )
+        db.session.add(user)
+        db.session.commit()
+    return user
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -231,14 +231,14 @@ def login():
             session["username"] = username
             return redirect(url_for('home'))
 
-        # # LDAP authentication (for future)
-        # if user.login_ldap:
-        #     result = ldap_manager.authenticate(username, password)
-        #     if result.status:
-        #         login_user(result.user)
-        #         return redirect(url_for('home'))
-        #     else:
-        #         return render_template('login.html', show_modal='no_access_to_filex')
+        # LDAP authentication (for future)
+        if user.login_ldap:
+            result = ldap_manager.authenticate(username, password)
+            if result.status:
+                login_user(result.user)
+                return redirect(url_for('home'))
+            else:
+                return render_template('login.html', show_modal='no_access_to_filex')
 
         return render_template('login.html', show_modal='error',
                                             error_message='Incorrect password. Please try again.')
