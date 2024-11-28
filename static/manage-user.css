@@ -2,9 +2,9 @@
 .content-section {
     margin: 30px;
 }
-body{
+/* body{
     overflow-y: hidden;
-}
+} */
 
 .main-container {
     display: flex;

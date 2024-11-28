@@ -1,5 +1,33 @@
+body {
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+}
+
+.container {
+    padding: 20px 0;
+    height: auto;
+}
+
+.table-responsive {
+    position: relative;
+    transition: opacity 0.3s;
+    overflow: auto;
+    margin-bottom: 20px;
+    max-height: calc(100vh - 200px); 
+}
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 1;
+}
+
 .content-section{
     margin: 30px;
+    height: auto;
 }
 
 .btn-primary {
