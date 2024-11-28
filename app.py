@@ -36,6 +36,11 @@ def format_datetime(value):
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://proftpd_stage:C{7#iUoNc82@FXCEBFS0304/proftpd?charset=utf8"
 app.config['SECRET_KEY'] = 'smiskisecretkey1738dummydingdong'
 
+app.config['SESSION_TYPE'] = 'filesystem'  # Store sessions in filesystem
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)  # Session timeout
+app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookie over HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+
 # LDAP Config
 # ldap_manager = LDAP3LoginManager(app)
 # login_manager = LoginManager(app)
@@ -51,13 +56,10 @@ app.config['SECRET_KEY'] = 'smiskisecretkey1738dummydingdong'
 # app.config['LDAP_BIND_USER_DN'] = None
 # app.config['LDAP_BIND_USER_PASSWORD'] = None
 
-# Session(app)
+Session(app)
 db = SQLAlchemy(app)
-users = {"admin": "admin"} # dummy acc for admin -- in actuality, ppl with the @traxtech.com domain can access this [to implement: LDAP]
-
 migrate = Migrate(app, db)
 
-# Update TraxUser class in app.py
 class TraxUser(db.Model):
     __tablename__ = 'trax_users'
     
