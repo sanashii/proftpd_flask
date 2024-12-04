@@ -1,7 +1,8 @@
 # !/usr/bin/env python
 import csv
 from io import StringIO, TextIOWrapper
-from flask import Flask, Response, jsonify, render_template, url_for, request, redirect, session
+from flask import Flask, Response, jsonify, render_template, url_for
+from flask import request, redirect, session
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -41,28 +42,31 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)  # Session timeout
 app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookie over HTTPS
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 
-# LDAP Config
-ldap_manager = LDAP3LoginManager(app)
-login_manager = LoginManager(app)
-
-app.config['LDAP_HOST'] = 'ldap://dc0100.s03.filex.com'
+app.config['LDAP_HOST'] = 'dc0100.s03.filex.com'
 app.config['LDAP_PORT'] = 389
 app.config['LDAP_USE_SSL'] = False
-app.config['LDAP_BASE_DN'] = 'dc=filex,dc=com'
-app.config['LDAP_USER_DN'] = 'ou=Trax Personnel'
-app.config['LDAP_GROUP_DN'] = 'ou=Security Groups'
-# app.config['LDAP_USER_RDN_ATTR'] = 'uid'
-# app.config['LDAP_USER_LOGIN_ATTR'] = 'mail'
-app.config['LDAP_BIND_USER_DN'] = '###'
-app.config['LDAP_BIND_USER_PASSWORD'] = '###'
+app.config['LDAP_BASE_DN'] = 'dc=filteredsecurity,dc=filex,dc=com'
+app.config['LDAP_USER_DN'] = 'FILTEREDSECURIT'
+app.config['LDAP_USER_RDN_ATTR'] = 'sAMAccountName'
+app.config['LDAP_BIND_USER_DN'] = ''
+app.config['LDAP_BIND_USER_PASSWORD'] = ''
+
+# Additional attributes for user information (optional)
+app.config['LDAP_GROUP_OBJECT_FILTER'] = '(objectClass=group)'
+app.config['LDAP_GROUP_MEMBERS_ATTR'] = 'member'
 
 Session(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+# LDAP Config -- load here, this must be initiated after the config binding
+ldap_manager = LDAP3LoginManager(app)
+login_manager = LoginManager(app)
+
+
 class TraxUser(db.Model):
     __tablename__ = 'trax_users'
-    
+
     username = db.Column(db.String(50), primary_key=True, nullable=False)
     f_name = db.Column(db.String(50))
     l_name = db.Column(db.String(50))
@@ -81,9 +85,10 @@ class TraxUser(db.Model):
         salt = self.password[:2]
         return self.password == salt + binascii.hexlify(hashlib.md5((salt + password).encode('utf-8')).digest()).decode('utf-8').upper()
 
+
 class User(db.Model):
     __tablename__ = 'users'
-    
+
     username = db.Column(db.String(128), primary_key=True)
     password = db.Column(db.String(128), nullable=False)
     uid = db.Column(db.Integer)
@@ -100,17 +105,17 @@ class User(db.Model):
     login_history = relationship('LoginHistory', backref='user', cascade='all, delete-orphan')
     user_keys = relationship('UserKey', backref='user', cascade='all, delete-orphan')
     xfer_logs = relationship('XferLog', backref='user', cascade='all, delete-orphan')
-    
+
     @property
     def computed_status(self):
         # First check if manually disabled
         if not self.enabled:
             return 'Disabled'
-            
+
         # Check if never accessed
         if self.last_accessed is None:
             return 'Inactive (Never accessed)'
-            
+
         try:
             # Use timezone-aware datetime
             now = datetime.now(timezone.utc)
@@ -119,9 +124,9 @@ class User(db.Model):
                 last_accessed = self.last_accessed.replace(tzinfo=timezone.utc)
             else:
                 last_accessed = self.last_accessed
-                
+
             days_inactive = (now - last_accessed).days
-            
+
             if days_inactive > 150:
                 return 'Disabled'
             elif days_inactive > 7:
@@ -131,7 +136,7 @@ class User(db.Model):
         except Exception as e:
             print(f"Error calculating status: {e}")
             return 'Inactive (Error calculating days)'
-        
+
     def set_password(self, password):
         salt = ''.join(random.choice(string.ascii_lowercase) for x in range(2))
         self.password = salt + binascii.hexlify(hashlib.md5((salt + password).encode('utf-8')).digest()).decode('utf-8').upper()
@@ -140,22 +145,24 @@ class User(db.Model):
         salt = self.password[:2]
         return self.password == salt + binascii.hexlify(hashlib.md5((salt + password).encode('utf-8')).digest()).decode('utf-8').upper()
 
+
 class Group(db.Model):
     __tablename__ = 'groups'
-    
+
     groupname = db.Column(db.String(128), primary_key=True)
     gid = db.Column(db.Integer, nullable=False)
     members = db.Column(db.Text)
 
+
 class HostKey(db.Model):
     __tablename__ = 'host_keys'
-    
+
     host = db.Column(db.String(255), primary_key=True)
     public_key = db.Column(db.Text, nullable=False)
 
 class LoginHistory(db.Model):
     __tablename__ = 'login_history'
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(128), db.ForeignKey('users.username', ondelete='CASCADE', onupdate='CASCADE'))
     client_ip = db.Column(db.String(128), nullable=False)
@@ -165,14 +172,14 @@ class LoginHistory(db.Model):
 
 class UserKey(db.Model):
     __tablename__ = 'user_keys'
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(128), db.ForeignKey('users.username', ondelete='CASCADE', onupdate='CASCADE'))
     public_key = db.Column(db.Text, nullable=False)
 
 class XferLog(db.Model):
     __tablename__ = 'xferlog'
-    
+
     # Remove id field since it doesn't exist in database
     username = db.Column(db.String(128), db.ForeignKey('users.username', ondelete='CASCADE', onupdate='CASCADE'))
     filename = db.Column(db.Text)
@@ -277,14 +284,14 @@ def password_reset():
 def home():
     if not session.get("username"):
         return redirect("/login")
-    
+
     page = request.args.get('page', 1, type=int)
     per_page = 10
     sort_by = request.args.get('sort_by', 'username')
     filter_status = request.args.get('filter_by', 'all')
     search_query = request.args.get('search', '')
     groups = Group.query.all()
-    
+
     query = get_filtered_sorted_users(sort_by, filter_status, search_query)
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
@@ -301,13 +308,13 @@ def manage_user(username):
         return redirect("/login")
 
     user = User.query.get_or_404(username)
-    
+
     # Get latest transfer log
     latest_transfer = XferLog.query.filter_by(username=username)\
         .order_by(XferLog.localtime.desc())\
         .first()
 
-    return render_template('manage_user.html', 
+    return render_template('manage_user.html',
                          user=user,
                          latest_transfer=latest_transfer)
 
@@ -330,7 +337,7 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
         now = func.now()
         seven_days_ago = now - timedelta(days=7)
         five_months_ago = now - timedelta(days=150)
-        
+
         if filter_status == 'active':
             query = query.filter(
                 User.enabled == True,
@@ -344,7 +351,7 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
                     User.last_accessed.is_(None),
                     db.and_(
                         User.last_accessed > seven_days_ago,
-                        User.last_accessed < five_months_ago 
+                        User.last_accessed < five_months_ago
                     )
                 )
             )
@@ -352,7 +359,7 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
             query = query.filter(
                 db.or_(
                     User.enabled == False,  # Manually disabled
-                    User.last_accessed >= five_months_ago 
+                    User.last_accessed >= five_months_ago
                 )
             )
 
@@ -363,7 +370,7 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
         query = query.order_by(User.email)
     elif sort_by == 'homedir':
         query = query.order_by(User.homedir)
-    
+
     # Add group filtering
     if filter_status.startswith('group_'):
         try:
@@ -371,7 +378,7 @@ def get_filtered_sorted_users(sort_by='username', filter_status='all', search_qu
             query = query.filter(User.gid == group_id)
         except (IndexError, ValueError):
             pass
-        
+
     return query
 
 # for logout button
@@ -413,7 +420,7 @@ def create_user():
                 last_accessed=None
             )
             new_user.set_password(password)
-            
+
             db.session.add(new_user)
             db.session.commit()
             return render_template('create_user.html',
@@ -473,7 +480,7 @@ def get_user_status_counts():
             'inactive_users': inactive_users,
             'disabled_users': disabled_users
         })
-        
+
     except Exception as e:
         print(f"Error in status counts: {str(e)}")
         return jsonify({
@@ -490,32 +497,33 @@ def update_user():
 
     username = request.form.get('username')
     user = User.query.get_or_404(username)
-    
+
     try:
         # Update user fields
         user.homedir = request.form.get('homedir')
         user.name = request.form.get('name')
         user.phone = request.form.get('phone')
         user.email = request.form.get('email')
-        
+
         # Update password if provided
         new_password = request.form.get('password')
         if new_password:
             user.set_password(new_password)
-            
+
         # Update enabled status
         user.enabled = not request.form.get('enabled')
-        
+
         db.session.commit()
         return redirect(url_for('home'))
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error updating user: {e}")
-        return render_template('manage_user.html',
-                             user=user,
-                             show_modal='error',
-                             error_message='Error updating user')
+        return render_template(
+            'manage_user.html',
+            user=user,
+            show_modal='error',
+            error_message='Error updating user')
 
 # for deleting user in manage_user.html
 #! NOTE: button is currently disabled but if enabled, the user deletion does not work yet [to be updated]
@@ -560,25 +568,25 @@ def bulk_disable():
 def export_users():
     users = request.args.get('users', '').split(',')
     users_data = User.query.filter(User.username.in_(users)).all()
-    
+
     output = StringIO()
     writer = csv.writer(output)
-    
+
     headers = [
-        'username', 
-        'uid', 
-        'gid', 
-        'homedir', 
-        'shell', 
+        'username',
+        'uid',
+        'gid',
+        'homedir',
+        'shell',
         'enabled',
         'name',
         'phone',
         'email',
         'last_accessed'
     ]
-    
+
     writer.writerow(headers)
-    
+
     for user in users_data:
         row = [
             user.username,
@@ -593,7 +601,7 @@ def export_users():
             user.last_accessed.strftime('%Y-%m-%d %H:%M:%S') if user.last_accessed else None
         ]
         writer.writerow(row)
-    
+
     return Response(
         output.getvalue(),
         mimetype='text/csv',
@@ -604,27 +612,27 @@ def export_users():
 def import_users():
     if 'file' not in request.files:
         return jsonify({'success': False, 'message': 'No file uploaded'})
-        
+
     try:
         file = request.files['file']
         # Use regular reader instead of DictReader
         reader = csv.reader(TextIOWrapper(file))
-        
+
         # Skip header row
         next(reader)
-        
+
         # Password generation function (same as in create_user)
         def generate_password(length=12):
             chars = string.ascii_letters + string.digits + string.punctuation
             return ''.join(random.choice(chars) for _ in range(length))
-        
+
         for row in reader:
             if not row:  # Skip empty rows
                 continue
-                
+
             # Generate random password
             random_password = generate_password()
-            
+
             # Map columns by position
             user = User(
                 username=row[0],
@@ -639,12 +647,12 @@ def import_users():
             )
             user.set_password(random_password)
             db.session.add(user)
-            
+
             print(f"Generated password for {row[0]}: {random_password}")
-            
+
         db.session.commit()
         return jsonify({'success': True})
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
