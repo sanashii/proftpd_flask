@@ -54,13 +54,13 @@
     
             <input class="form-control mr-sm-5" type="search" placeholder="Enter username" aria-label="Search" name="search" value="{{ request.args.get('search', '') }}">
             <button class="btn btn-outline-success ms-2 me-2 my-2 my-sm-0" type="submit">Search</button>
-            {% if session.get('user_type') == 'admin' or session.get('can_modify') %}
+            {% if session.get('user_type') == 'admin' and session.get('can_modify') %}
             <button type="button" class="btn btn-sm btn-info me-2 my-2 my-sm-0" id="importUsers">Import</button>
             {% endif %}
         </form>
     </nav>
 
-    {% if session.get('user_type') == 'admin' or session.get('can_modify') %}
+    {% if session.get('user_type') == 'admin' and session.get('can_modify') %}
     <div id="bulkActionsBar" class="bg-light p-2 mb-3 d-none">
         <div class="d-flex align-items-center">
             <span class="me-2"><span id="selectedCount">0</span> users selected</span>
@@ -89,7 +89,7 @@
     <table class="table table-hover table-sm">
         <thead>
         <tr>
-            {% if session.get('user_type') == 'admin' or session.get('can_modify') %}
+            {% if session.get('user_type') == 'admin' and session.get('can_modify') %}
             <th>
                 <input type="checkbox" id="selectAll" class="form-check-input">
             </th>
@@ -103,11 +103,11 @@
         <tbody>
             {% if users %}
             {% for user in users %}
-            <tr {% if session.get('user_type') == 'admin' or session.get('can_modify') %}
+            <tr {% if session.get('user_type') == 'admin' and session.get('can_modify') %}
                 onclick=window.location.href="{{ url_for('manage_user', username=user.username) }}"
                 style="cursor: pointer;"
                 {% endif %}>
-                {% if session.get('user_type') == 'admin' or session.get('can_modify') %}
+                {% if session.get('user_type') == 'admin' and session.get('can_modify') %}
                 <td onclick="event.stopPropagation()">
                     <input type="checkbox" class="form-check-input user-select" 
                         value="{{ user.username }}">
