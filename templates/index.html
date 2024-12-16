@@ -26,13 +26,28 @@
       <a href="{{ url_for('home') }}" class="navbar-brand">
         <img src="{{ url_for('static', filename='img/trax logo.jpg') }}" width="120" height="30" alt="Trax Tech Logo">
       </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
+        <span class="navbar-toggler-icon"></span>
+      </button>
     
       <div id="navbarNavAltMarkup" class="collapse navbar-collapse">
         <div class="navbar-nav">
-            <a href="{{ url_for('home') }}" class="nav-item nav-link {% if request.endpoint == 'home' %}active{% endif %}">Home</a>
-            <a class="nav-item nav-link {% if request.endpoint == 'manage_user' %}active{% endif %}">Manage Users</a>
-            <a href="{{ url_for('create_user') }}" class="nav-item nav-link {% if request.endpoint == 'create_user' %}active{% endif %}">Create User</a>
-        </div>
+          <a href="{{ url_for('home') }}" class="nav-item nav-link me-3 {% if request.endpoint == 'home' %}active{% endif %}">Home</a>
+          {% if session.get('user_type') == 'admin' %}
+              <a class="nav-item nav-link me-3 {% if request.endpoint == 'manage_user' %}active{% endif %}">Manage Users</a>
+              <a href="{{ url_for('create_user') }}" class="nav-item nav-link me-3 {% if request.endpoint == 'create_user' %}active{% endif %}">Create User</a>
+              <div class="nav-item dropdown me-3">
+                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Administration
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                    <li><a class="dropdown-item" href="#">Create Profiles</a></li> 
+                    <li><a class="dropdown-item" href="#">Manage Profiles</a></li> 
+                </ul>
+            </div>
+          {% endif %}
+      </div>
       </div>
 
       <!-- for logout button -->
