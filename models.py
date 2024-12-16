@@ -19,6 +19,9 @@ class TraxUser(db.Model):
     # login_ldap = db.Column(db.Boolean)
     is_enabled = db.Column(db.Boolean)
     user_type = db.Column(db.String(50))
+    can_view = db.Column(db.Boolean)
+    can_create = db.Column(db.Boolean)
+    can_modify = db.Column(db.Boolean)
     # password = db.Column(db.String(128), nullable=False) # should be linked to the trax employee's password na that was predetermined
 
     # def set_password(self, password):
