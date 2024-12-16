@@ -1,5 +1,6 @@
 # !/usr/bin/env python
 import csv
+from functools import wraps
 from io import StringIO, TextIOWrapper
 from flask import Flask, Response, jsonify, render_template, url_for
 from flask import request, redirect, session
@@ -89,38 +90,52 @@ def login():
 
     if request.method == "POST":
         username = request.form.get("username")
-        password = request.form.get("password")
+        password = request.form.get("password")  # Keep for future LDAP implementation
 
-        # Admin fallback for preprod only
+        # Admin fallback
         if username == "admin" and password == "admin":
             session["username"] = "admin"
             session["user_type"] = "admin"
+            session["can_view"] = True
+            session["can_create"] = True
+            session["can_modify"] = True
             return redirect(url_for('home'))
 
         # Check if user exists and is enabled in trax_users table
         user = TraxUser.query.filter_by(username=username, is_enabled=True).first()
         if not user:
             return render_template('login.html', show_modal='error',
-                                                    error_message='Account does not exist. Please contact your administrator.')
+                                error_message='Account does not exist or is disabled.')
 
-        # # Check password
-        # if user.check_password(password):
-        #     session["username"] = username
-        #     return redirect(url_for('home'))
+        # Set session data based on user privileges
+        session["username"] = username
+        session["user_type"] = user.user_type
+        session["can_view"] = user.can_view
+        session["can_create"] = user.can_create
+        session["can_modify"] = user.can_modify
 
-        # # LDAP authentication (for future)
-        # if user.login_ldap:
-        #     result = ldap_manager.authenticate(username, password)
-        #     if result.status:
-        #         login_user(result.user)
-        #         return redirect(url_for('home'))
-        #     else:
-        #         return render_template('login.html', show_modal='no_access_to_filex')
-
-        # return render_template('login.html', show_modal='error',
-        #                                     error_message='Incorrect password. Please try again.')
+        return redirect(url_for('home'))
 
     return render_template('login.html')
+
+
+# Add permission decorators
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_type") != "admin":
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def modify_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("can_modify"):
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @app.route('/password_reset', methods=['GET', 'POST'])
@@ -173,6 +188,7 @@ def home():
 
 # manage user component
 @app.route('/manage_user/<string:username>', methods=['GET'])
+@modify_required
 def manage_user(username):
     if not session.get("username"):
         return redirect("/login")
@@ -260,6 +276,7 @@ def logout():
 
 
 @app.route('/create_user', methods=['GET', 'POST'])
+@modify_required
 def create_user():
     if request.method == 'POST':
         try:

@@ -54,10 +54,13 @@
     
             <input class="form-control mr-sm-5" type="search" placeholder="Enter username" aria-label="Search" name="search" value="{{ request.args.get('search', '') }}">
             <button class="btn btn-outline-success ms-2 me-2 my-2 my-sm-0" type="submit">Search</button>
+            {% if session.get('user_type') == 'admin' or session.get('can_modify') %}
             <button type="button" class="btn btn-sm btn-info me-2 my-2 my-sm-0" id="importUsers">Import</button>
+            {% endif %}
         </form>
     </nav>
 
+    {% if session.get('user_type') == 'admin' or session.get('can_modify') %}
     <div id="bulkActionsBar" class="bg-light p-2 mb-3 d-none">
         <div class="d-flex align-items-center">
             <span class="me-2"><span id="selectedCount">0</span> users selected</span>
@@ -81,13 +84,16 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
     <table class="table table-hover table-sm">
         <thead>
         <tr>
+            {% if session.get('user_type') == 'admin' or session.get('can_modify') %}
             <th>
                 <input type="checkbox" id="selectAll" class="form-check-input">
             </th>
+            {% endif %}
             <th scope="col">Username</th>
             <th scope="col">Email</th>
             <th scope="col">Home Directory</th>
@@ -96,29 +102,34 @@
         </thead>
         <tbody>
             {% if users %}
-                {% for user in users %}
-                <tr onclick=window.location.href="{{ url_for('manage_user', username=user.username) }}" style="cursor: pointer;">
-                    <td onclick="event.stopPropagation()">
-                        <input type="checkbox" class="form-check-input user-select" 
-                            value="{{ user.username }}">
-                    </td>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.email or 'N/A' }}</td>
-                    <td>{{ user.homedir }}</td>
-                    <td>
-                        <span class="badge {% if 'Active' in user.computed_status %}bg-success
-                                        {% elif 'Disabled' in user.computed_status %}bg-danger
-                                        {% else %}bg-warning{% endif %}">
-                            {{ user.computed_status }}
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="4" class="text-center">No users found</td>
-                </tr>
-            {% endif %}
+            {% for user in users %}
+            <tr {% if session.get('user_type') == 'admin' or session.get('can_modify') %}
+                onclick=window.location.href="{{ url_for('manage_user', username=user.username) }}"
+                style="cursor: pointer;"
+                {% endif %}>
+                {% if session.get('user_type') == 'admin' or session.get('can_modify') %}
+                <td onclick="event.stopPropagation()">
+                    <input type="checkbox" class="form-check-input user-select" 
+                        value="{{ user.username }}">
+                </td>
+                {% endif %}
+                <td>{{ user.username }}</td>
+                <td>{{ user.email or 'N/A' }}</td>
+                <td>{{ user.homedir }}</td>
+                <td>
+                    <span class="badge {% if 'Active' in user.computed_status %}bg-success
+                                    {% elif 'Disabled' in user.computed_status %}bg-danger
+                                    {% else %}bg-warning{% endif %}">
+                        {{ user.computed_status }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="4" class="text-center">No users found</td>
+            </tr>
+        {% endif %}
         </tbody>
     </table>
 
