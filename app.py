@@ -119,11 +119,21 @@ def login():
     return render_template('login.html')
 
 
-# Add permission decorators
+# Permission decorators
+# *NOTE: EVERY ADMIN AND USER ARE SET TO BE ABLE TO VIEW BY DEFAULT because it doesnt make sense if they cant
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_type") != "admin":
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def create_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("can_create"):
             return redirect(url_for('home'))
         return f(*args, **kwargs)
     return decorated_function
@@ -137,6 +147,14 @@ def modify_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
+def delete_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("can_delete"):
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/password_reset', methods=['GET', 'POST'])
 def password_reset():
@@ -184,6 +202,49 @@ def home():
                          users=pagination.items,
                          pagination=pagination,
                          groups=groups)
+
+
+# for admin stuff
+@app.route('/create_profile', methods=['GET', 'POST'])
+@admin_required
+@create_required
+def create_profile():
+    if not session.get("username"):
+        return redirect("/login")
+        
+    if request.method == 'POST':
+        try:
+            # Get form data and append domain
+            username = request.form.get('username') + '@traxtech.com'
+            user_type = request.form.get('userType')
+            can_view = 'view' in request.form
+            can_create = 'create' in request.form
+            can_modify = 'modify' in request.form
+
+            new_profile = TraxUser(
+                username=username, 
+                user_type=user_type,
+                is_enabled=True,
+                can_view=can_view,
+                can_create=can_create,
+                can_modify=can_modify
+            )
+
+            db.session.add(new_profile)
+            db.session.commit()
+
+            return render_template('create_profile.html', 
+                                show_modal='success',
+                                success_message='Profile created successfully!',
+                                success_redirect=url_for('home'))
+
+        except Exception as e:
+            db.session.rollback()
+            return render_template('create_profile.html', 
+                                show_modal='error',
+                                error_message=f'Error creating profile: {str(e)}')
+
+    return render_template('create_profile.html')
 
 
 # manage user component
