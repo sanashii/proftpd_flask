@@ -16,6 +16,7 @@
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 
     <!-- custom cript -->
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
@@ -37,15 +38,16 @@
           {% if session.get('user_type') == 'admin' %}
               <a class="nav-item nav-link me-3 {% if request.endpoint == 'manage_user' %}active{% endif %}">Manage Users</a>
               <a href="{{ url_for('create_user') }}" class="nav-item nav-link me-3 {% if request.endpoint == 'create_user' %}active{% endif %}">Create User</a>
-              <div class="nav-item dropdown me-3">
-                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Administration
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-                    <li><a class="dropdown-item" href="#">Create Profiles</a></li> 
-                    <li><a class="dropdown-item" href="#">Manage Profiles</a></li> 
-                </ul>
-            </div>
+              <div class="nav-item dropdown">
+                  <button class="btn nav-link dropdown-toggle" type="button" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                      Administration
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                      <li><a class="dropdown-item {% if request.endpoint == 'create_profile' %}active{% endif %}" href="{{ url_for('create_profile') }}">Create Profiles</a></li>
+                      <li><a class="dropdown-item" href="#">Manage Profiles</a></li>
+                      <li><a class="dropdown-item" href="#">Logs</a></li>
+                  </ul>
+              </div>
           {% endif %}
       </div>
       </div>

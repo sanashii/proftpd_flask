@@ -70,6 +70,12 @@ $(document).ready(function() {
         loadCreateUser();
     });
 
+    // Handle 'Create Profile' click event
+    $('#create-profile-link').click(function(e) {
+        e.preventDefault();
+        loadCreateProfile();
+    });
+
     // Handle 'Home' click event
     $('#home-link').click(function(e) {
         e.preventDefault();
@@ -216,6 +222,17 @@ function loadManageUser(userName) {
         })
         .catch(error => {
             console.error('Error loading user details:', error);
+        });
+}
+
+function loadCreateProfile() {
+    // Update the URL without reloading the full page
+    history.pushState(null, '', `/create_profile`);
+
+    fetch('/create_profile')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('content').innerHTML = data;
         });
 }
 
@@ -506,6 +523,13 @@ function restoreCheckboxStates() {
     });
 }
 
+$('.dropdown-item').on('click', function(e) {
+    const href = $(this).attr('href');
+    if (href && href !== '#') {
+        window.location.href = href;
+    }
+});
+
 // Clear cache when filters change
 $('#sortDropdown, #filterDropdown').on('click', 'a', function() {
     pageCache.clear();
@@ -534,6 +558,24 @@ function fetchUserStatusCounts() {
 // for pagination back and forward
 window.addEventListener('popstate', function() {
     loadContent(window.location.pathname + window.location.search);
+});
+
+// for admin dropdown tab in index.html
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize all dropdowns
+    var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
+    var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+        return new bootstrap.Dropdown(dropdownToggleEl)
+    });
+
+    // click handler for dropdown items
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (this.getAttribute('href')) {
+                window.location.href = this.getAttribute('href');
+            }
+        });
+    });
 });
 
 // for password generator
