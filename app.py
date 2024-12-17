@@ -134,7 +134,11 @@ def create_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get("can_create"):
-            return redirect(url_for('home'))
+            return render_template('create_profile.html', 
+                                show_modal='error',
+                                error_message='You do not have permission to create profiles / users.',
+                                error_redirect=url_for('home'),
+                                error_button_text='Back to Home')
         return f(*args, **kwargs)
     return decorated_function
 
@@ -236,7 +240,8 @@ def create_profile():
             return render_template('create_profile.html', 
                                 show_modal='success',
                                 success_message='Profile created successfully!',
-                                success_redirect=url_for('home'))
+                                success_redirect=url_for('home'),
+                                success_button_text='OK')
 
         except Exception as e:
             db.session.rollback()
@@ -249,6 +254,7 @@ def create_profile():
 
 # manage user component
 @app.route('/manage_user/<string:username>', methods=['GET'])
+@admin_required
 @modify_required
 def manage_user(username):
     if not session.get("username"):
@@ -337,7 +343,8 @@ def logout():
 
 
 @app.route('/create_user', methods=['GET', 'POST'])
-@modify_required
+@admin_required
+@create_required
 def create_user():
     if request.method == 'POST':
         try:
