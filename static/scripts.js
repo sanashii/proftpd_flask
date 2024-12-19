@@ -189,6 +189,63 @@ $(document).ready(function() {
             }
         });
     });
+
+    $('.edit-profile').click(function() {
+        const username = $(this).data('username');
+        const row = $(`#row-${username}`);
+        
+        // Enable inputs
+        row.find('input, select').prop('disabled', false);
+        
+        // Show/hide buttons
+        $(this).addClass('d-none');
+        row.find('.save-profile, .cancel-edit').removeClass('d-none');
+    });
+
+    $('.save-profile').click(function() {
+        const username = $(this).data('username');
+        const row = $(`#row-${username}`);
+        
+        const data = {
+            is_enabled: row.find('.status-toggle').prop('checked'),
+            user_type: row.find('.user-type').val(),
+            can_view: row.find('.can-view').prop('checked'),
+            can_create: row.find('.can-create').prop('checked'),
+            can_modify: row.find('.can-modify').prop('checked')
+        };
+
+        $.ajax({
+            url: `/update_profile/${username}`,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    // Disable inputs
+                    row.find('input, select').prop('disabled', true);
+                    
+                    // Show/hide buttons
+                    row.find('.edit-profile').removeClass('d-none');
+                    row.find('.save-profile, .cancel-edit').addClass('d-none');
+                }
+            }
+        });
+    });
+
+    $('.cancel-edit').click(function() {
+        const username = $(this).data('username');
+        const row = $(`#row-${username}`);
+        
+        // Disable inputs and reset to original values
+        row.find('input, select').prop('disabled', true);
+        
+        // Show/hide buttons
+        row.find('.edit-profile').removeClass('d-none');
+        row.find('.save-profile, .cancel-edit').addClass('d-none');
+        
+        // Reload page to reset values
+        location.reload();
+    });
 });
 
 function loadHome() {

@@ -252,6 +252,50 @@ def create_profile():
     return render_template('create_profile.html')
 
 
+@app.route('/manage_profiles')
+@admin_required
+@modify_required
+def manage_profiles():
+    if not session.get("username"):
+        return redirect("/login")
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    search_query = request.args.get('search', '')
+
+    query = TraxUser.query
+    if search_query:
+        query = query.filter(TraxUser.username.ilike(f'%{search_query}%'))
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    return render_template('manage_profiles.html',
+                         profiles=pagination.items,
+                         pagination=pagination)
+
+
+@app.route('/update_profile/<string:username>', methods=['POST'])
+@admin_required
+@modify_required
+def update_profile(username):
+    profile = TraxUser.query.get_or_404(username)
+    try:
+        data = request.get_json()
+        
+        # Update profile attributes
+        profile.is_enabled = data.get('is_enabled', profile.is_enabled)
+        profile.user_type = data.get('user_type', profile.user_type)
+        profile.can_view = data.get('can_view', profile.can_view)
+        profile.can_create = data.get('can_create', profile.can_create)
+        profile.can_modify = data.get('can_modify', profile.can_modify)
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+
 # manage user component
 @app.route('/manage_user/<string:username>', methods=['GET'])
 @admin_required

@@ -44,7 +44,7 @@
                   </button>
                   <ul class="dropdown-menu" aria-labelledby="adminDropdown">
                       <li><a class="dropdown-item {% if request.endpoint == 'create_profile' %}active{% endif %}" href="{{ url_for('create_profile') }}">Create Profiles</a></li>
-                      <li><a class="dropdown-item" href="#">Manage Profiles</a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('manage_profiles') }}">Manage Profiles</a></li>
                       <li><a class="dropdown-item" href="#">Logs</a></li>
                   </ul>
               </div>
