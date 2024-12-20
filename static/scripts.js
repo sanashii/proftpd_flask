@@ -33,6 +33,7 @@ const pageCache = {
 $(document).ready(function() {
     fetchUserStatusCounts();
     initBulkOperations();
+    initProfileHandlers();
 
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('user_id');
@@ -188,63 +189,6 @@ $(document).ready(function() {
                 console.error('Error deleting user:', error);
             }
         });
-    });
-
-    $('.edit-profile').click(function() {
-        const username = $(this).data('username');
-        const row = $(`#row-${username}`);
-        
-        // Enable inputs
-        row.find('input, select').prop('disabled', false);
-        
-        // Show/hide buttons
-        $(this).addClass('d-none');
-        row.find('.save-profile, .cancel-edit').removeClass('d-none');
-    });
-
-    $('.save-profile').click(function() {
-        const username = $(this).data('username');
-        const row = $(`#row-${username}`);
-        
-        const data = {
-            is_enabled: row.find('.status-toggle').prop('checked'),
-            user_type: row.find('.user-type').val(),
-            can_view: row.find('.can-view').prop('checked'),
-            can_create: row.find('.can-create').prop('checked'),
-            can_modify: row.find('.can-modify').prop('checked')
-        };
-
-        $.ajax({
-            url: `/update_profile/${username}`,
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(data),
-            success: function(response) {
-                if (response.success) {
-                    // Disable inputs
-                    row.find('input, select').prop('disabled', true);
-                    
-                    // Show/hide buttons
-                    row.find('.edit-profile').removeClass('d-none');
-                    row.find('.save-profile, .cancel-edit').addClass('d-none');
-                }
-            }
-        });
-    });
-
-    $('.cancel-edit').click(function() {
-        const username = $(this).data('username');
-        const row = $(`#row-${username}`);
-        
-        // Disable inputs and reset to original values
-        row.find('input, select').prop('disabled', true);
-        
-        // Show/hide buttons
-        row.find('.edit-profile').removeClass('d-none');
-        row.find('.save-profile, .cancel-edit').addClass('d-none');
-        
-        // Reload page to reset values
-        location.reload();
     });
 });
 
@@ -559,6 +503,92 @@ function initBulkOperations() {
             });
         };
         input.click();
+    });
+}
+
+function initProfileHandlers() {
+    $(document).off('click', '.edit-profile, .save-profile, .cancel-edit');
+
+    // Edit button handler
+    $(document).on('click', '.edit-profile', function() {
+        const username = $(this).data('username');
+        const row = $(`#row-${username}`);
+        
+        // Store original values before enabling edit
+        const originalValues = {
+            is_enabled: row.find('.status-toggle').prop('checked'),
+            user_type: row.find('.user-type').val(),
+            can_view: row.find('.can-view').prop('checked'),
+            can_create: row.find('.can-create').prop('checked'),
+            can_modify: row.find('.can-modify').prop('checked')
+        };
+        row.data('original-values', originalValues);
+
+        // Enable inputs
+        row.find('input, select').prop('disabled', false);
+        
+        // Toggle button visibility
+        $(this).hide();
+        row.find('.save-profile, .cancel-edit').show();
+    });
+
+    // Save button handler
+    $(document).on('click', '.save-profile', function() {
+        const username = $(this).data('username');
+        const row = $(`#row-${username}`);
+        
+        const data = {
+            is_enabled: row.find('.status-toggle').prop('checked'),
+            user_type: row.find('.user-type').val(),
+            can_view: row.find('.can-view').prop('checked'),
+            can_create: row.find('.can-create').prop('checked'),
+            can_modify: row.find('.can-modify').prop('checked')
+        };
+
+        $.ajax({
+            url: `/update_profile/${username}`,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    // Disable inputs
+                    row.find('input, select').prop('disabled', true);
+                    
+                    // Toggle button visibility
+                    row.find('.edit-profile').show();
+                    row.find('.save-profile, .cancel-edit').hide();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error updating profile:', error);
+                alert('Failed to update profile. Please try again.');
+            }
+        });
+    });
+
+    // Cancel button handler
+    $(document).on('click', '.cancel-edit', function() {
+        const username = $(this).data('username');
+        const row = $(`#row-${username}`);
+        
+        // Get original values
+        const originalValues = row.data('original-values');
+        if (originalValues) {
+            // Reset to original values
+            row.find('.status-toggle').prop('checked', originalValues.is_enabled);
+            row.find('.user-type').val(originalValues.user_type);
+            row.find('.can-view').prop('checked', originalValues.can_view);
+            row.find('.can-create').prop('checked', originalValues.can_create);
+            row.find('.can-modify').prop('checked', originalValues.can_modify);
+        }
+        
+        // Disable inputs
+        row.find('input, select').prop('disabled', true);
+        
+        // Toggle button visibility
+        row.find('.edit-profile').show();
+        row.find('.save-profile, .cancel-edit').hide();
     });
 }
 

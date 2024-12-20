@@ -260,7 +260,7 @@ def manage_profiles():
         return redirect("/login")
 
     page = request.args.get('page', 1, type=int)
-    per_page = 10
+    per_page = 6
     search_query = request.args.get('search', '')
 
     query = TraxUser.query
