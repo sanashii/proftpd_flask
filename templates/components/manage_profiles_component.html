@@ -7,77 +7,28 @@
 </head>
 <body data-show-modal="{{ show_modal if show_modal else '' }}">
     <div class="container">
-        <nav class="navbar navbar-light bg-light justify-content-between mt-4">
+        <nav class="navbar navbar-light bg-light justify-content-between mt-4" aria-label="Profile Navigation">
             <h4 class="navbar-brand">List of Profiles</h4>
-            <form class="form-inline d-flex align-items-center" method="GET">
-                <input class="form-control mr-sm-2" type="search" placeholder="Search profiles" name="search" value="{{ request.args.get('search', '') }}">
-                <button class="btn btn-outline-success ms-2 me-2 my-2 my-sm-0"" type="submit">Search</button>
-            </form>
+            <div class="form-inline d-flex align-items-center">
+                <input class="form-control mr-sm-2" type="search" id="profileSearch" placeholder="Search profiles">
+            </div>
         </nav>
     
-        <table class="table table-hover-sm">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Status</th>
-                    <th>User Type</th>
-                    <th>View</th>
-                    <th>Create</th>
-                    <th>Modify</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for profile in profiles %}
-                <tr id="row-{{ profile.username }}">
-                    <td>{{ profile.username }}</td>
-                    <td>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input status-toggle" type="checkbox" 
-                                   {% if profile.is_enabled %}checked{% endif %}
-                                   data-username="{{ profile.username }}"
-                                   disabled>
-                        </div>
-                    </td>
-                    <td>
-                        <select class="form-select user-type" disabled>
-                            <option value="user" {% if profile.user_type == 'user' %}selected{% endif %}>User</option>
-                            <option value="admin" {% if profile.user_type == 'admin' %}selected{% endif %}>Admin</option>
-                        </select>
-                    </td>
-                    <td>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input can-view" 
-                                   {% if profile.can_view %}checked{% endif %} disabled>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input can-create" 
-                                   {% if profile.can_create %}checked{% endif %} disabled>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input can-modify" 
-                                   {% if profile.can_modify %}checked{% endif %} disabled>
-                        </div>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-primary edit-profile" data-username="{{ profile.username }}" style="display: inline-block;">
-                            <i class="fas fa-pencil-alt"></i>
-                        </button>
-                        <button class="btn btn-sm btn-success save-profile" data-username="{{ profile.username }}" style="display: none;">
-                            <i class="fas fa-save"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger cancel-edit" data-username="{{ profile.username }}" style="display: none;">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table id="profilesTable" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th>User Type</th>
+                        <th>View</th>
+                        <th>Create</th>
+                        <th>Modify</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
     
         <!-- Pagination -->
         <nav aria-label="Profile pages" class="d-flex justify-content-center">
