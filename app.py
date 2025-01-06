@@ -252,6 +252,7 @@ def create_profile():
     return render_template('create_profile.html')
 
 
+# Route to render the manage profiles page
 @app.route('/manage_profiles')
 @admin_required
 @modify_required
@@ -272,35 +273,6 @@ def manage_profiles():
     return render_template('manage_profiles.html',
                          profiles=pagination.items,
                          pagination=pagination)
-
-
-@app.route('/api/profiles')
-@modify_required
-@admin_required
-def get_profiles():
-    page = request.args.get('page', 1, type=int)
-    per_page = 10
-    search = request.args.get('search', '')
-    
-    query = TraxUser.query
-    if search:
-        query = query.filter(TraxUser.username.ilike(f'%{search}%'))
-        
-    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-    
-    return jsonify({
-        'data': [{
-            'username': p.username,
-            'is_enabled': p.is_enabled,
-            'user_type': p.user_type,
-            'can_view': p.can_view,
-            'can_create': p.can_create,
-            'can_modify': p.can_modify
-        } for p in pagination.items],
-        'total': pagination.total,
-        'pages': pagination.pages,
-        'current_page': pagination.page
-    })
 
 
 # manage user component

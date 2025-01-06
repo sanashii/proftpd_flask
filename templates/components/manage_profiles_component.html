@@ -7,15 +7,16 @@
 </head>
 <body data-show-modal="{{ show_modal if show_modal else '' }}">
     <div class="container">
-        <nav class="navbar navbar-light bg-light justify-content-between mt-4" aria-label="Profile Navigation">
+        <nav class="navbar navbar-light bg-light justify-content-between mt-4">
             <h4 class="navbar-brand">List of Profiles</h4>
-            <div class="form-inline d-flex align-items-center">
-                <input class="form-control mr-sm-2" type="search" id="profileSearch" placeholder="Search profiles">
-            </div>
+            <form class="form-inline" method="GET">
+                <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search profiles" value="{{ request.args.get('search', '') }}">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
         </nav>
     
         <div class="table-responsive">
-            <table id="profilesTable" class="table table-hover">
+            <table class="table table-hover">
                 <thead>
                     <tr>
                         <th>Username</th>
@@ -27,35 +28,72 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
+                <tbody>
+                    {% for profile in profiles %}
+                    <tr id="row-{{ profile.username }}">
+                        <td>{{ profile.username }}</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input status-toggle" type="checkbox" {% if profile.is_enabled %}checked{% endif %} disabled>
+                            </div>
+                        </td>
+                        <td>
+                            <select class="form-select user-type" disabled>
+                                <option value="user" {% if profile.user_type == 'user' %}selected{% endif %}>User</option>
+                                <option value="admin" {% if profile.user_type == 'admin' %}selected{% endif %}>Admin</option>
+                            </select>
+                        </td>
+                        <td>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input can-view" {% if profile.can_view %}checked{% endif %} disabled>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input can-create" {% if profile.can_create %}checked{% endif %} disabled>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input can-modify" {% if profile.can_modify %}checked{% endif %} disabled>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary edit-profile" data-username="{{ profile.username }}">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="btn btn-sm btn-success save-profile" style="display: none;">
+                                <i class="fas fa-save"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger cancel-edit" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     
-        <!-- Pagination -->
-        <nav aria-label="Profile pages" class="d-flex justify-content-center">
-            <ul class="pagination">
+        <nav aria-label="Page navigation" class="mt-3">
+            <ul class="pagination justify-content-center">
                 {% if pagination.has_prev %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('manage_profiles', page=pagination.prev_num) }}">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
+                    <a class="page-link" href="{{ url_for('manage_profiles', page=pagination.prev_num, search=request.args.get('search', '')) }}">Previous</a>
                 </li>
                 {% endif %}
-                
-                {% for page_num in pagination.iter_pages() %}
-                    {% if page_num %}
-                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                            <a class="page-link" href="{{ url_for('manage_profiles', page=page_num) }}">
-                                {{ page_num }}
-                            </a>
+    
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('manage_profiles', page=page, search=request.args.get('search', '')) }}">{{ page }}</a>
                         </li>
                     {% endif %}
                 {% endfor %}
-                
+    
                 {% if pagination.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('manage_profiles', page=pagination.next_num) }}">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
+                    <a class="page-link" href="{{ url_for('manage_profiles', page=pagination.next_num, search=request.args.get('search', '')) }}">Next</a>
                 </li>
                 {% endif %}
             </ul>

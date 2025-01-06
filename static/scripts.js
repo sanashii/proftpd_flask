@@ -192,163 +192,68 @@ $(document).ready(function() {
     });
 
     // Managing profiles
-    let table = $('#profilesTable').DataTable({
-            serverSide: true,
-            ajax: {
-                url: '/api/profiles',
-                data: function(d) {
-                    d.page = (d.start / d.length) + 1;
-                    d.per_page = d.length;
-                    d.search = d.search.value;
-                }
-            },
-            processing: true,
-            pageLength: 10,
-        columns: [
-            { data: 'username' },
-            { 
-                data: 'is_enabled',
-                render: function(data, type, row) {
-                    return `
-                        <div class="form-check form-switch">
-                            <input class="form-check-input status-toggle" type="checkbox" 
-                                   ${data ? 'checked' : ''} disabled>
-                        </div>`;
-                }
-            },
-            {
-                data: 'user_type',
-                render: function(data, type, row) {
-                    return `
-                        <select class="form-select user-type" disabled>
-                            <option value="user" ${data === 'user' ? 'selected' : ''}>User</option>
-                            <option value="admin" ${data === 'admin' ? 'selected' : ''}>Admin</option>
-                        </select>`;
-                }
-            },
-            {
-                data: 'can_view',
-                render: function(data, type, row) {
-                    return `
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input can-view" 
-                                   ${data ? 'checked' : ''} disabled>
-                        </div>`;
-                }
-            },
-            {
-                data: 'can_create',
-                render: function(data, type, row) {
-                    return `
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input can-create" 
-                                   ${data ? 'checked' : ''} disabled>
-                        </div>`;
-                }
-            },
-            {
-                data: 'can_modify',
-                render: function(data, type, row) {
-                    return `
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input can-modify" 
-                                   ${data ? 'checked' : ''} disabled>
-                        </div>`;
-                }
-            },
-            {
-                data: null,
-                render: function(data, type, row) {
-                    return `
-                        <button class="btn btn-sm btn-primary edit-profile" data-username="${row.username}">
-                            <i class="fas fa-pencil-alt"></i>
-                        </button>
-                        <button class="btn btn-sm btn-success save-profile" style="display: none;">
-                            <i class="fas fa-save"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger cancel-edit" style="display: none;">
-                            <i class="fas fa-times"></i>
-                        </button>`;
-                }
-            }
-        ],
-        drawCallback: function(settings) {
-            // Update pagination UI
-            let api = this.api();
-            let info = api.page.info();
-            
-            $('.pagination .page-item').removeClass('active');
-            $(`.pagination .page-item:eq(${info.page})`).addClass('active');
-        }
-    });
-
-    // Edit button handler
-    $('#profilesTable').on('click', '.edit-profile', function() {
-        const tr = $(this).closest('tr');
-        const row = table.row(tr);
-        
-        tr.find('input, select').prop('disabled', false);
-        $(this).hide();
-        tr.find('.save-profile, .cancel-edit').show();
+    $('.edit-profile').click(function() {
+        const row = $(this).closest('tr');
         
         // Store original values
-        tr.data('original', {
-            is_enabled: tr.find('.status-toggle').prop('checked'),
-            user_type: tr.find('.user-type').val(),
-            can_view: tr.find('.can-view').prop('checked'),
-            can_create: tr.find('.can-create').prop('checked'),
-            can_modify: tr.find('.can-modify').prop('checked')
+        row.data('original', {
+            is_enabled: row.find('.status-toggle').prop('checked'),
+            user_type: row.find('.user-type').val(),
+            can_view: row.find('.can-view').prop('checked'),
+            can_create: row.find('.can-create').prop('checked'),
+            can_modify: row.find('.can-modify').prop('checked')
         });
+
+        // Enable inputs
+        row.find('input, select').prop('disabled', false);
+        
+        // Toggle buttons
+        $(this).hide();
+        row.find('.save-profile, .cancel-edit').show();
     });
 
-    // Save button handler
-    $('#profilesTable').on('click', '.save-profile', function() {
-        const tr = $(this).closest('tr');
-        const row = table.row(tr);
-        const username = tr.find('.edit-profile').data('username');
-
-        const data = {
-            is_enabled: tr.find('.status-toggle').prop('checked'),
-            user_type: tr.find('.user-type').val(),
-            can_view: tr.find('.can-view').prop('checked'),
-            can_create: tr.find('.can-create').prop('checked'),
-            can_modify: tr.find('.can-modify').prop('checked')
-        };
+    $('.save-profile').click(function() {
+        const row = $(this).closest('tr');
+        const username = row.find('.edit-profile').data('username');
 
         $.ajax({
             url: `/update_profile/${username}`,
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify(data),
+            data: JSON.stringify({
+                is_enabled: row.find('.status-toggle').prop('checked'),
+                user_type: row.find('.user-type').val(),
+                can_view: row.find('.can-view').prop('checked'),
+                can_create: row.find('.can-create').prop('checked'),
+                can_modify: row.find('.can-modify').prop('checked')
+            }),
             success: function(response) {
                 if (response.success) {
-                    tr.find('input, select').prop('disabled', true);
-                    tr.find('.edit-profile').show();
-                    tr.find('.save-profile, .cancel-edit').hide();
-                    table.ajax.reload(null, false);
+                    row.find('input, select').prop('disabled', true);
+                    row.find('.edit-profile').show();
+                    row.find('.save-profile, .cancel-edit').hide();
                 }
-            },
-            error: function(xhr, status, error) {
-                alert('Failed to update profile');
-                console.error(error);
             }
         });
     });
 
-    // Cancel button handler
-    $('#profilesTable').on('click', '.cancel-edit', function() {
-        const tr = $(this).closest('tr');
-        const original = tr.data('original');
+    $('.cancel-edit').click(function() {
+        const row = $(this).closest('tr');
+        const original = row.data('original');
 
-        tr.find('.status-toggle').prop('checked', original.is_enabled);
-        tr.find('.user-type').val(original.user_type);
-        tr.find('.can-view').prop('checked', original.can_view);
-        tr.find('.can-create').prop('checked', original.can_create);
-        tr.find('.can-modify').prop('checked', original.can_modify);
+        // Reset to original values
+        row.find('.status-toggle').prop('checked', original.is_enabled);
+        row.find('.user-type').val(original.user_type);
+        row.find('.can-view').prop('checked', original.can_view);
+        row.find('.can-create').prop('checked', original.can_create);
+        row.find('.can-modify').prop('checked', original.can_modify);
 
-        tr.find('input, select').prop('disabled', true);
-        tr.find('.edit-profile').show();
-        tr.find('.save-profile, .cancel-edit').hide();
+        // Disable inputs
+        row.find('input, select').prop('disabled', true);
+        
+        // Toggle buttons
+        row.find('.edit-profile').show();
+        row.find('.save-profile, .cancel-edit').hide();
     });
 });
 
