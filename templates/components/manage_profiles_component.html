@@ -7,11 +7,11 @@
 </head>
 <body data-show-modal="{{ show_modal if show_modal else '' }}">
     <div class="container">
-        <nav class="navbar navbar-light bg-light justify-content-between mt-4">
+        <nav class="navbar navbar-light bg-light justify-content-between mt-4" aria-label="Profile Navigation">
             <h4 class="navbar-brand">List of Profiles</h4>
-            <form class="form-inline" method="GET">
-                <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search profiles" value="{{ request.args.get('search', '') }}">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            <form class="form-inline d-flex">
+                <input class="form-control mr-2" type="search" name="search" placeholder="Search profiles" value="{{ request.args.get('search', '') }}">
+                <button class="btn btn-outline-success ms-2 me-2 my-2 my-sm-0" type="submit">Search</button>
             </form>
         </nav>
     

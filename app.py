@@ -274,6 +274,22 @@ def manage_profiles():
                          profiles=pagination.items,
                          pagination=pagination)
 
+@app.route('/update_profile/<string:username>', methods=['POST'])
+@admin_required
+@modify_required
+def update_profile(username):
+    profile = TraxUser.query.get_or_404(username)
+    data = request.get_json()
+        
+    # Update profile attributes
+    profile.is_enabled = data.get('is_enabled', profile.is_enabled)
+    profile.user_type = data.get('user_type', profile.user_type)
+    profile.can_view = data.get('can_view', profile.can_view)
+    profile.can_create = data.get('can_create', profile.can_create)
+    profile.can_modify = data.get('can_modify', profile.can_modify)
+        
+    db.session.commit()
+    return jsonify({'success': True})
 
 # manage user component
 @app.route('/manage_user/<string:username>', methods=['GET'])

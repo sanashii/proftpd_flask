@@ -617,17 +617,16 @@ function initProfileHandlers() {
             data: JSON.stringify(data),
             success: function(response) {
                 if (response.success) {
-                    // Disable inputs
                     row.find('input, select').prop('disabled', true);
-                    
-                    // Toggle button visibility
                     row.find('.edit-profile').show();
                     row.find('.save-profile, .cancel-edit').hide();
+                } else {
+                    alert('Failed to update profile: ' + response.error);
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Error updating profile:', error);
-                alert('Failed to update profile. Please try again.');
+                alert('Failed to update profile: ' + xhr.responseText);
+                console.error('Error updating profile:', xhr.responseText);
             }
         });
     });
