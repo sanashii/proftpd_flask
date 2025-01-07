@@ -132,6 +132,12 @@ $(document).ready(function() {
         }
     });
 
+    // Handle 'Admin Logs' click event
+    $('#admin-logs-link').click(function(e) {
+        e.preventDefault();
+        loadAdminLogs();
+    });
+
     // Close submenus when clicking outside
     $(document).on('click', function(e) {
         if (!$(e.target).closest('.dropdown-submenu').length) {
@@ -299,6 +305,19 @@ function loadCreateProfile() {
         .then(response => response.text())
         .then(data => {
             document.getElementById('content').innerHTML = data;
+        });
+}
+
+function loadAdminLogs() {
+    history.pushState(null, '', `/admin_logs`);
+
+    fetch('/admin_logs')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('content').innerHTML = data;
+        })
+        .catch(error => {
+            console.error('Error loading admin logs:', error);
         });
 }
 

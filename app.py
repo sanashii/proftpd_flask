@@ -16,7 +16,7 @@ import hashlib
 import binascii
 import random
 import string
-from models import db, User, TraxUser, Group, HostKey, LoginHistory, UserKey, XferLog
+from models import db, User, TraxUser, Group, HostKey, LoginHistory, UserKey, XferLog, AdminLog
 
 
 app = Flask(__name__)
@@ -224,11 +224,12 @@ def create_profile():
             can_view = 'view' in request.form
             can_create = 'create' in request.form
             can_modify = 'modify' in request.form
+            is_enabled = request.form.get('status') == 'enabled'
 
             new_profile = TraxUser(
                 username=username, 
                 user_type=user_type,
-                is_enabled=True,
+                is_enabled=is_enabled,
                 can_view=can_view,
                 can_create=can_create,
                 can_modify=can_modify
@@ -236,6 +237,9 @@ def create_profile():
 
             db.session.add(new_profile)
             db.session.commit()
+
+            # Log the admin action
+            log_admin_action(f"CREATED profile for {username}")
 
             return render_template('create_profile.html', 
                                 show_modal='success',
@@ -274,6 +278,7 @@ def manage_profiles():
                          profiles=pagination.items,
                          pagination=pagination)
 
+# updating profiles
 @app.route('/update_profile/<string:username>', methods=['POST'])
 @admin_required
 @modify_required
@@ -289,7 +294,40 @@ def update_profile(username):
     profile.can_modify = data.get('can_modify', profile.can_modify)
         
     db.session.commit()
+        
+    # Log the admin action
+    action = "DISABLED" if not profile.is_enabled else "UPDATED"
+    log_admin_action(f"{action} profile for {username}")
+        
     return jsonify({'success': True})
+
+# admin logs component
+@app.route('/admin_logs')
+@admin_required
+def admin_logs():
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    search_query = request.args.get('search', '')
+
+    query = AdminLog.query.join(TraxUser, AdminLog.change_made_by == TraxUser.username)
+
+    if search_query:
+        query = query.filter(AdminLog.change_done.ilike(f'%{search_query}%'))
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template('admin_logs.html',
+                           logs=pagination.items,
+                           pagination=pagination)
+    
+def log_admin_action(change_done):
+    admin_log = AdminLog(
+        date_time=datetime.now(timezone.utc),
+        change_done=change_done,
+        change_made_by=session.get("username")
+    )
+    db.session.add(admin_log)
+    db.session.commit()
 
 # manage user component
 @app.route('/manage_user/<string:username>', methods=['GET'])

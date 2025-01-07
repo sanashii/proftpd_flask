@@ -48,8 +48,7 @@
               <a href="{{ url_for('create_user') }}" class="nav-item nav-link me-3 {% if request.endpoint == 'create_user' %}active{% endif %}">Create User</a>
               <a href="{{ url_for('create_profile') }}" class="nav-item nav-link me-3 {% if request.endpoint == 'create_profile' %}active{% endif %}">Create Profiles</a>
               <a href="{{ url_for('manage_profiles') }}" class="nav-item nav-link me-3 {% if request.endpoint == 'manage_profiles' %}active{% endif %}">Manage Profiles</a>
-              <a href="#" class="nav-item nav-link me-3 {% if request.endpoint == 'logs' %}active{% endif %}">Logs</a>
-          {% endif %}
+              <a href="{{ url_for('admin_logs') }}" class="nav-item nav-link me-3 {% if request.endpoint == 'admin_logs' %}active{% endif %}">Admin Logs</a>          {% endif %}
       </div>
       </div>
 

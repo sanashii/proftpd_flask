@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import hashlib
@@ -8,6 +9,17 @@ import random
 import string
 
 db = SQLAlchemy()
+
+class AdminLog(db.Model):
+    __tablename__ = 'admin_logs'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    date_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    change_done = db.Column(db.Text, nullable=False)
+    change_made_by = db.Column(db.String(50), db.ForeignKey('trax_users.username'), nullable=False)
+
+    # Relationship to TraxUser
+    user = db.relationship('TraxUser', backref='admin_logs')
 
 
 class TraxUser(db.Model):
