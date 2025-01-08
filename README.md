@@ -182,4 +182,12 @@ CREATE TABLE `xferlog` (
   KEY `localtime_idx` (`localtime`),
   CONSTRAINT `username` FOREIGN KEY (`username`) REFERENCES `users` (`username`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE admin_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    date_time DATETIME NOT NULL,
+    change_done TEXT NOT NULL,
+    change_made_by VARCHAR(50) NOT NULL,
+    FOREIGN KEY (change_made_by) REFERENCES trax_users(username)
+);
 ```
