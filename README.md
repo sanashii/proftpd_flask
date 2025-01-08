@@ -12,6 +12,10 @@ The ProFTPD Management System is a web application designed to manage users, gro
 - Import/Export: Import users from a CSV file and export user data to a CSV file.
 - Password Management: Generate and validate passwords with a built-in password generator.
 - User Status: View active, inactive, and disabled users.
+- **Admin Logs**: Track and display admin actions such as creating, updating, and deleting profiles.
+- **Profile Management**: Create, update, and disable profiles with radio buttons for enabling/disabling users.
+- **Dynamic Table Updates**: Refresh and dynamically update tables without reloading the page.
+- **Color-coded Logs**: Color-code admin logs based on action type (e.g., green for created, yellow for updated, red for deleted).
 
 ## Technologies Used
 
@@ -26,20 +30,20 @@ The ProFTPD Management System is a web application designed to manage users, gro
 ### Prerequisites
 
 - Python 3.x
-- MySQL server
+- MySQL
 
-### Setup
+### Steps
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/sanashii/proftpd_flask
-    cd proftpd-flask
+    git clone https://github.com/yourusername/proftpd_flask.git
+    cd proftpd_flask
     ```
 
 2. Create a virtual environment and activate it:
     ```bash
     python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
+    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
     ```
 
 3. Install the required packages:
@@ -47,20 +51,18 @@ The ProFTPD Management System is a web application designed to manage users, gro
     pip install -r requirements.txt
     ```
 
-4. Configure the database:
-- Update the `SQLALCHEMY_DATABASE_URI` in `app.py` with your MySQL database credentials.
-
-5. Initialize the database:
+4. Set up the database:
     ```bash
     flask db init
     flask db migrate
     flask db upgrade
     ```
 
-6. Run the application:
+5. Run the application:
     ```bash
     flask run
     ```
+
 
 ## Usage
 
