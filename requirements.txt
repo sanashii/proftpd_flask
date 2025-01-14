@@ -1,8 +1,10 @@
-Flask==3.0.3
-Flask-Migrate==4.0.7
-Flask-Session==0.8.0
+Flask==2.3.2
 Flask-SQLAlchemy==3.1.1
 mysql-connector-python==9.1.0
 typing_extensions==4.12.2
 python-dotenv==1.0.1
 flake8==7.1.1
+Flask-Session==0.4.0
+Flask-Migrate==4.0.4
+Flask-LDAP3-Login==0.9.18
+Flask-Login==0.6.2
