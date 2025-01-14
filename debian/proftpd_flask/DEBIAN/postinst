@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+# Install Python dependencies
+pip3 install -r /var/www/proftpd_flask/requirements.txt
+
+# Set up the database
+cd /var/www/proftpd_flask
+flask db upgrade
+
+# Make the script executable
+chmod +x /usr/local/bin/run_proftpd_flask
+
+# Restart the service (if applicable)
+# systemctl restart proftpd_flask.service
+
+exit 0
