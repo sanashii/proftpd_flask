@@ -4,7 +4,6 @@ Section: web
 Priority: optional
 Architecture: all
 Depends: python3, python3-pip
-Maintainer: Your Name <your.email@example.com>
+Maintainer: Andrea Baulita <andybaulita@gmail.com>
 Description: ProFTPD Management Web Application
  A web application designed to manage users, groups, and their associated data for a ProFTPD server.
- 

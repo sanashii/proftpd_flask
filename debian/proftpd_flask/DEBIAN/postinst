@@ -11,7 +11,4 @@ flask db upgrade
 # Make the script executable
 chmod +x /usr/local/bin/run_proftpd_flask
 
-# Restart the service (if applicable)
-# systemctl restart proftpd_flask.service
-
 exit 0
