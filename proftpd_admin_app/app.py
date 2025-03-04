@@ -17,9 +17,15 @@ import binascii
 import random
 import string
 from models import db, User, TraxUser, Group, HostKey, LoginHistory, UserKey, XferLog, AdminLog
+import os
 
+# Define the application root directory
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-app = Flask(__name__)
+# Initialize Flask app with custom template and static folders
+app = Flask(__name__,
+           template_folder=os.path.join(APP_ROOT, 'templates'),
+           static_folder=os.path.join(APP_ROOT, 'static'))
 
 
 @app.template_filter('datetime')
@@ -34,15 +40,23 @@ def format_datetime(value):
     return value.strftime('%Y-%m-%d %H:%M:%S')
 
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://proftpd_stage:####@FXCEBFS0304?charset=utf8"
-# app.config['SECRET_KEY'] = '####'
+# Session configuration
+app.config.update(
+    SESSION_TYPE='filesystem',
+    SESSION_FILE_DIR=os.path.join(APP_ROOT, 'flask_session'),
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=2),
+    SESSION_COOKIE_SECURE=False,  # Set to False for development (no HTTPS)
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_NAME='proftpd_session',  # Set cookie name for Flask-Session
+    SESSION_COOKIE_SAMESITE='Lax'  # Add SameSite policy for security
+)
+
+# Initialize Flask-Session
+Session(app)
+
+# Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://proftpd_stage:C{7#iUoNc82@FXCEBFS0304/proftpd?charset=utf8"
 app.config['SECRET_KEY'] = 'smiskisecretkey1738dummydingdong'
-
-app.config['SESSION_TYPE'] = 'filesystem'  # Store sessions in filesystem
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)  # Session timeout
-app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookie over HTTPS
-app.config['SESSION_COOKIE_HTTPONLY'] = True
 
 app.config['LDAP_HOST'] = 'dc0100.s03.filex.com'
 app.config['LDAP_PORT'] = 389
@@ -56,7 +70,6 @@ app.config['LDAP_BIND_USER_PASSWORD'] = ''
 app.config['LDAP_GROUP_OBJECT_FILTER'] = '(objectClass=group)'
 app.config['LDAP_GROUP_MEMBERS_ATTR'] = 'member'
 
-Session(app)
 db.init_app(app)
 migrate = Migrate(app, db)
 
