@@ -18,12 +18,8 @@
         <div class="card-header bg-light">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Files and Directories</h5>
-                <div class="btn-group">
-                    <!-- Only show if current directory is writable -->
-                    <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
-                        <i class="fas fa-upload me-2"></i>Upload Files
-                    </button>
-                    <input type="file" id="fileInput" multiple style="display: none" onchange="handleFileSelect(event)">
+                <div class="btn-group" id="upload-button-container">
+                    <!-- Upload button will be dynamically shown/hidden based on permissions -->
                 </div>
             </div>
         </div>
@@ -90,6 +86,27 @@
         </div>
     </div>
 </div>
+
+<!-- Permission Denied Modal -->
+<div class="modal fade" id="permissionDeniedModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Permission Denied
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>You don't have permission to upload files to this directory.</p>
+                <p>This is a read-only directory.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -98,13 +115,33 @@
 const directoryCache = new Map();
 let currentPath = '/';
 
+function updateUploadButton(permissions) {
+    const container = document.getElementById('upload-button-container');
+    if (permissions && permissions.write) {
+        container.innerHTML = `
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-upload me-2"></i>Upload Files
+            </button>
+            <input type="file" id="fileInput" multiple style="display: none" onchange="handleFileSelect(event)">
+        `;
+    } else {
+        container.innerHTML = `
+            <button type="button" class="btn btn-secondary" onclick="showPermissionDeniedModal()">
+                <i class="fas fa-upload me-2"></i>Upload Files
+            </button>
+        `;
+    }
+}
+
+function showPermissionDeniedModal() {
+    const modal = new bootstrap.Modal(document.getElementById('permissionDeniedModal'));
+    modal.show();
+}
+
 async function loadDirectory(dirPath) {
     try {
-        // Normalize the path for API call
         const apiPath = dirPath === '/' ? '' : dirPath.replace(/^\/+|\/+$/g, '');
         const apiUrl = `/api/directory/${apiPath}`;
-        
-        console.log('Loading directory:', apiUrl); // Debug log
         
         const response = await fetch(apiUrl);
         if (!response.ok) {
@@ -112,13 +149,21 @@ async function loadDirectory(dirPath) {
         }
         
         const data = await response.json();
-        console.log('Received data:', data); // Debug log
         
+        // Update upload button based on directory permissions
+        if (dirPath === '/') {
+            // At root, always show upload button as disabled
+            updateUploadButton({ write: false });
+        } else {
+            // Get permissions for current directory
+            const currentDirPerms = data.directory_permissions || { write: false };
+            updateUploadButton(currentDirPerms);
+        }
+
         // Update the table with the directory contents
         const tbody = document.querySelector('tbody');
         let html = '';
         
-        // Only show "Back" button if we're not at root
         if (dirPath !== '/') {
             html += `
                 <tr>

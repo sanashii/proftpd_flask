@@ -127,12 +127,26 @@ def list_directory(directory):
             }
             for dirname, perms in directories.items()
         ]
-        return jsonify({'contents': contents})
+        return jsonify({
+            'contents': contents,
+            'directory_permissions': {'write': False}  # Root directory is always read-only
+        })
     
     # For specific directories
     directory = directory.strip('/')
+    user_dirs = get_user_directories(username)
+    
+    # Check if the directory exists and get its permissions
+    if directory not in user_dirs:
+        return jsonify({'error': 'Directory not found'}), 404
+    
+    directory_permissions = user_dirs[directory]
     contents = get_directory_contents(username, directory)
-    return jsonify({'contents': contents})
+    
+    return jsonify({
+        'contents': contents,
+        'directory_permissions': directory_permissions
+    })
 
 @app.route('/api/upload/<path:directory>', methods=['POST'])
 def upload_file(directory):
