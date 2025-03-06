@@ -134,7 +134,7 @@ For testing purposes, the following demo users are available:
   - Projects (Read/Write)
   - Shared (Read Only)
 
-## Project Structure
+## Admin App Project Structure
 
 ```MySQL
 create table trax_users(
