@@ -2,35 +2,53 @@
 
 ## Overview
 
-The ProFTPD Management System is a web application designed to manage users, groups, and their associated data for a ProFTPD server. It provides functionalities for creating, updating, deleting, and bulk managing users, as well as importing and exporting user data.
+The ProFTPD Management System consists of two web applications:
+
+1. **ProFTPD Admin App**: A comprehensive management interface for administrators to manage users, groups, and server configurations.
+2. **ProFTPD SFTP App**: A user-friendly web interface for SFTP users to manage their files and directories.
 
 ## Features
 
-- User Management: Create, update, delete, and manage users.
-- Group Management: Assign users to groups and manage group memberships.
-- Bulk Operations: Perform bulk enable, disable, delete, and group assignment operations.
-- Import/Export: Import users from a CSV file and export user data to a CSV file.
-- Password Management: Generate and validate passwords with a built-in password generator.
-- User Status: View active, inactive, and disabled users.
-- **Admin Logs**: Track and display admin actions such as creating, updating, and deleting profiles.
-- **Profile Management**: Create, update, and disable profiles with radio buttons for enabling/disabling users.
-- **Dynamic Table Updates**: Refresh and dynamically update tables without reloading the page.
-- **Color-coded Logs**: Color-code admin logs based on action type (e.g., green for created, yellow for updated, red for deleted).
+### Admin App Features
+- User Management: Create, update, delete, and manage users
+- Group Management: Assign users to groups and manage group memberships
+- Bulk Operations: Perform bulk enable, disable, delete, and group assignment operations
+- Import/Export: Import users from CSV and export user data
+- Password Management: Generate and validate passwords
+- User Status: View active, inactive, and disabled users
+- Admin Logs: Track and display admin actions
+- Profile Management: Create, update, and disable profiles
+- Dynamic Table Updates: Refresh tables without page reload
+- Color-coded Logs: Visual indicators for different action types
+
+### SFTP App Features
+- 🔐 Secure user authentication
+- 📁 Directory navigation with breadcrumb support
+- 📤 File upload with drag-and-drop support
+- 📥 File download functionality
+- 🗑️ File deletion (with permission checks)
+- 🔒 Role-based access control
+- 📱 Responsive design
+- 🎨 Modern UI with Bootstrap 5 and Font Awesome icons
 
 ## Technologies Used
 
-- Flask: Web framework for Python.
-- SQLAlchemy: ORM for database interactions.
-- Bootstrap: Frontend framework for responsive design.
-- JavaScript: For dynamic interactions and AJAX requests.
-- MySQL: Database for storing user and group data.
+- Flask: Web framework for Python
+- SQLAlchemy: ORM for database interactions
+- Bootstrap: Frontend framework for responsive design
+- JavaScript: For dynamic interactions and AJAX requests
+- MySQL: Database for storing user and group data
+- Flask-Session: For session management
+- Werkzeug: For utilities and security features
 
 ## Installation
 
 ### Prerequisites
 
-- Python 3.x
+- Python 3.8 or higher
 - MySQL
+- pip (Python package installer)
+- Virtual environment (recommended)
 
 ### Steps
 
@@ -40,73 +58,83 @@ The ProFTPD Management System is a web application designed to manage users, gro
     cd proftpd_flask
     ```
 
-2. Create a virtual environment and activate it:
+2. Create and activate a virtual environment:
     ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+    python -m venv .venv
+    source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
     ```
 
-3. Install the required packages:
+3. Install dependencies:
     ```bash
     pip install -r requirements.txt
     ```
 
-4. Set up the database:
+4. Create necessary directories:
+    ```bash
+    mkdir -p proftpd_admin_app/flask_session proftpd_sftp_app/flask_session
+    ```
+
+5. Set up the database:
     ```bash
     flask db init
     flask db migrate
     flask db upgrade
     ```
 
-5. Run the application:
-    ```bash
-    flask run
-    ```
+## Running the Applications
 
+### Admin App
+```bash
+python run.py admin
+```
+Access at: `http://localhost:5000`
+
+### SFTP App
+```bash
+python run.py sftp
+```
+Access at: `http://localhost:5001`
 
 ## Usage
 
-### User Management
+### Admin App Usage
 
-- Navigate to the home page to view the list of users.
-- Use the "Create User" button to add a new user.
-- Click on a user row to manage the user's details.
-- Use the bulk actions toolbar to perform bulk operations on selected users.
+#### User Management
+- Navigate to the home page to view the list of users
+- Use the "Create User" button to add a new user
+- Click on a user row to manage the user's details
+- Use the bulk actions toolbar for multiple operations
 
-### Group Management
+#### Group Management
+- Assign users to groups using the "Assign Group" dropdown
+- Manage group memberships through the interface
 
-- Assign users to groups using the "Assign Group" dropdown in the bulk actions toolbar.
+#### Import/Export
+- Import users from CSV using the "Import Users" button
+- Export selected users to CSV using the "Export Selected" button
 
-### Importing
+### SFTP App Usage
 
-- Use the "Import Users" button in the navigation bar to import users from a CSV file.
-<br><strong>NOTE:</strong> importing users via csv should have a structure of:<br>
+#### File Management
+- Login with your SFTP credentials
+- Navigate through directories using the breadcrumb navigation
+- Upload files using drag-and-drop or the upload button
+- Download files using the download button
+- Delete files (if you have write permissions)
 
-```csv
-username, uid, gid, homedir, shell, enabled, name, phone, email, last_accessed
-```
+#### Demo Users
+For testing purposes, the following demo users are available:
 
-- the `username` column should not be empty
-- the password is automatically generated upon every user in the csv file
-- optional fields (may be left empty): <br>
-`uid - Defaults to 1000 if empty`<br>
-`gid - Defaults to 1000 if empty`<br>
-`homedir - Sets to NULL if empty`<br>
-`shell - Sets to NULL if empty`<br>
-`enabled - Defaults to True if empty`<br>
-`name - Sets to NULL if empty`<br>
-`phone - Sets to NULL if empty`<br>
-`email - Sets to NULL if empty `<br>
+- **user1**
+  - Documents (Read/Write)
+  - Downloads (Read Only)
+  - Public (Read/Write)
 
-### Exporting
+- **user2**
+  - Projects (Read/Write)
+  - Shared (Read Only)
 
-- Use the "Export Selected" button in the bulk actions toolbar to export selected users to a CSV file.
-
-### Password Management
-
-- Use the password generator in the user creation and management forms to generate strong passwords.
-
-### Table Structures
+## Project Structure
 
 ```MySQL
 create table trax_users(
