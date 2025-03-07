@@ -1,15 +1,15 @@
 # !/usr/bin/env python
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
 from flask_session import Session
-from datetime import timedelta
+from datetime import timedelta, datetime
 import os
 import json
 from werkzeug.utils import secure_filename
+import calendar
 
-# Define the application root directory
+
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# Initialize Flask app with custom template and static folders
 app = Flask(__name__,
            template_folder=os.path.join(APP_ROOT, 'templates'),
            static_folder=os.path.join(APP_ROOT, 'static'))
@@ -25,13 +25,9 @@ app.config.update(
     SESSION_COOKIE_SAMESITE='Lax'  # Add SameSite policy for security
 )
 
-# Initialize Flask-Session
 Session(app)
-
-# Secret key for session management
 app.config['SECRET_KEY'] = 'sftp-secret-key-change-in-production'
 
-# Demo user data - Replace with actual user data from your authentication system
 DEMO_USERS = {
     'user1': {
         'directories': {
@@ -165,7 +161,7 @@ def upload_file(directory):
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
     
-    # Demo implementation - just return success
+    # Demo implementation - just return success ;; to be replaced with actual file upload logic
     return jsonify({'message': 'File uploaded successfully'})
 
 @app.route('/api/download/<path:filepath>')
@@ -177,5 +173,76 @@ def download_file(filepath):
     # Demo implementation - just return a message
     return jsonify({'message': 'Download initiated'})
 
+def get_month_start_end(months_ago):
+    """Get start and end dates for the specified number of months ago."""
+    today = datetime.now()
+    if months_ago == 1:
+        # Last month
+        first_day = today.replace(day=1) - timedelta(days=1)
+        first_day = first_day.replace(day=1)
+    else:
+        # Multiple months ago
+        first_day = today.replace(day=1)
+        for _ in range(months_ago - 1):
+            first_day = (first_day - timedelta(days=1)).replace(day=1)
+    
+    last_day = today.replace(day=1) - timedelta(days=1)
+    return first_day, last_day
+
+@app.route('/api/stats/upload/<int:months>')
+def get_upload_stats(months):
+    """Get upload statistics for the specified time period."""
+    if not session.get('username'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    username = session['username']
+    start_date, end_date = get_month_start_end(months)
+    
+    # Demo implementation - replace with actual database query
+    # This would typically query the xferlog table for uploads
+    demo_stats = {
+        'total_size': 1024 * 1024 * 150  # 150 MB for demo
+    }
+    
+    return jsonify(demo_stats)
+
+@app.route('/api/stats/download/<int:months>')
+def get_download_stats(months):
+    """Get download statistics for the specified time period."""
+    if not session.get('username'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    username = session['username']
+    start_date, end_date = get_month_start_end(months)
+    
+    # Demo implementation - replace with actual database query
+    # This would typically query the xferlog table for downloads
+    demo_stats = {
+        'total_size': 1024 * 1024 * 75  # 75 MB for demo
+    }
+    
+    return jsonify(demo_stats)
+
+@app.route('/api/stats/files/<int:months>')
+def get_files_stats(months):
+    if 'username' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    username = session['username']
+    start_date, end_date = get_month_start_end(months)
+    
+    # TODO: Replace with actual database query
+    # This is a demo implementation
+    # In prod, we'd query the xferlog table:
+    # SELECT COUNT(*) as total_files 
+    # FROM xferlog 
+    # WHERE username = %s 
+    # AND date BETWEEN %s AND %s 
+    # AND type = 'a' (for uploads)
+    
+    return jsonify({
+        'total_files': 25  # Demo value only
+    })
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)  # Different port from admin app 
+    app.run(debug=True, port=5001)  # Different port from admin app (5000)
