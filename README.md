@@ -54,7 +54,7 @@ The ProFTPD Management System consists of two web applications:
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/proftpd_flask.git
+    git clone https://github.com/sanashii/proftpd_flask.git
     cd proftpd_flask
     ```
 
