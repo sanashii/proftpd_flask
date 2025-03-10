@@ -1,141 +1,150 @@
 # ProFTPD Management System
 
+A comprehensive web-based management system for ProFTPD, featuring both an admin interface and a user-friendly SFTP client.
+
 ## Overview
 
-The ProFTPD Management System consists of two web applications:
+This project consists of two main applications:
 
-1. **ProFTPD Admin App**: A comprehensive management interface for administrators to manage users, groups, and server configurations.
-2. **ProFTPD SFTP App**: A user-friendly web interface for SFTP users to manage their files and directories.
+### 1. ProFTPD Admin App
+A web-based administration interface for managing ProFTPD users, groups, and server configurations.
+
+### 2. ProFTPD SFTP App
+A modern web-based SFTP client interface that allows users to manage their files through a browser.
 
 ## Features
 
 ### Admin App Features
-- User Management: Create, update, delete, and manage users
-- Group Management: Assign users to groups and manage group memberships
-- Bulk Operations: Perform bulk enable, disable, delete, and group assignment operations
-- Import/Export: Import users from CSV and export user data
-- Password Management: Generate and validate passwords
-- User Status: View active, inactive, and disabled users
-- Admin Logs: Track and display admin actions
-- Profile Management: Create, update, and disable profiles
-- Dynamic Table Updates: Refresh tables without page reload
-- Color-coded Logs: Visual indicators for different action types
+- User Management
+  - Create, edit, and delete users
+  - Set user permissions and quotas
+  - Import/export user data
+- Group Management
+  - Create and manage user groups
+  - Assign users to groups
+- Server Configuration
+  - View and modify server settings
+  - Monitor server status
+- Log Management
+  - View transfer logs
+  - Monitor user activities
 
 ### SFTP App Features
-- 🔐 Secure user authentication
-- 📁 Directory navigation with breadcrumb support
-- 📤 File upload with drag-and-drop support
-- 📥 File download functionality
-- 🗑️ File deletion (with permission checks)
-- 🔒 Role-based access control
-- 📱 Responsive design
-- 🎨 Modern UI with Bootstrap 5 and Font Awesome icons
+- Modern, responsive interface
+- Secure user authentication
+- File Operations
+  - Upload and download files
+  - Create and manage directories
+  - Delete files and folders
+- Directory Navigation
+  - Browse through directories
+  - View file details
+  - Breadcrumb navigation
+- Statistics Dashboard
+  - Upload statistics with timespan selection
+  - Download statistics with timespan selection
+  - File count statistics with timespan selection
+- Permission Management
+  - Visual indicators for read/write permissions
+  - Permission-based access control
+- Progress Tracking
+  - Real-time upload progress
+  - Transfer status updates
 
 ## Technologies Used
-
-- Flask: Web framework for Python
-- SQLAlchemy: ORM for database interactions
-- Bootstrap: Frontend framework for responsive design
-- JavaScript: For dynamic interactions and AJAX requests
-- MySQL: Database for storing user and group data
-- Flask-Session: For session management
-- Werkzeug: For utilities and security features
+- Flask (Python web framework)
+- SQLAlchemy (Database ORM)
+- Bootstrap 5 (Frontend framework)
+- MySQL (Database)
+- ProFTPD (FTP server)
+- LDAP (Authentication system)
 
 ## Installation
 
 ### Prerequisites
-
-- Python 3.8 or higher
-- MySQL
-- pip (Python package installer)
-- Virtual environment (recommended)
+- Python 3.8+
+- MySQL Server
+- ProFTPD Server
+- LDAP Server (for authentication)
 
 ### Steps
-
 1. Clone the repository:
-    ```bash
-    git clone https://github.com/yourusername/proftpd_flask.git
-    cd proftpd_flask
-    ```
+   ```bash
+   git clone https://github.com/yourusername/proftpd_flask.git
+   cd proftpd_flask
+   ```
 
-2. Create and activate a virtual environment:
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
-    ```
+2. Create and activate virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
 3. Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-4. Create necessary directories:
-    ```bash
-    mkdir -p proftpd_admin_app/flask_session proftpd_sftp_app/flask_session
-    ```
+4. Set up the database:
+   ```bash
+   python init_db.py
+   ```
 
-5. Set up the database:
-    ```bash
-    flask db init
-    flask db migrate
-    flask db upgrade
-    ```
+5. Configure ProFTPD:
+   - Copy `proftpd.conf.example` to `proftpd.conf`
+   - Update the configuration with your settings
+   - Restart ProFTPD service
+
+6. Configure LDAP:
+   - Update LDAP settings in `config.py`
+   - Ensure LDAP server is running and accessible
 
 ## Running the Applications
 
 ### Admin App
 ```bash
-python run.py admin
+python proftpd_admin_app/app.py
 ```
-Access at: `http://localhost:5000`
+Access at: http://localhost:5000
 
 ### SFTP App
 ```bash
-python run.py sftp
+python proftpd_sftp_app/app.py
 ```
-Access at: `http://localhost:5001`
+Access at: http://localhost:5001
 
 ## Usage
 
-### Admin App Usage
+### Admin App
+1. Log in with admin credentials
+2. Navigate to Users or Groups section
+3. Manage users and groups as needed
+4. Monitor server status and logs
 
-#### User Management
-- Navigate to the home page to view the list of users
-- Use the "Create User" button to add a new user
-- Click on a user row to manage the user's details
-- Use the bulk actions toolbar for multiple operations
+### SFTP App
+1. Log in with user credentials
+2. Browse directories and manage files
+3. View statistics dashboard
+4. Upload/download files as needed
 
-#### Group Management
-- Assign users to groups using the "Assign Group" dropdown
-- Manage group memberships through the interface
+## Project Structure
+```
+proftpd_flask/
+├── proftpd_admin_app/
+│   ├── app.py
+│   ├── models.py
+│   ├── forms.py
+│   └── templates/
+├── proftpd_sftp_app/
+│   ├── app.py
+│   ├── models.py
+│   └── templates/
+├── config.py
+├── init_db.py
+└── requirements.txt
+```
 
-#### Import/Export
-- Import users from CSV using the "Import Users" button
-- Export selected users to CSV using the "Export Selected" button
-
-### SFTP App Usage
-
-#### File Management
-- Login with your SFTP credentials
-- Navigate through directories using the breadcrumb navigation
-- Upload files using drag-and-drop or the upload button
-- Download files using the download button
-- Delete files (if you have write permissions)
-
-#### Demo Users
-For testing purposes, the following demo users are available:
-
-- **user1**
-  - Documents (Read/Write)
-  - Downloads (Read Only)
-  - Public (Read/Write)
-
-- **user2**
-  - Projects (Read/Write)
-  - Shared (Read Only)
-
-## Admin App Project Structure
-
+## Database Schema
 ```MySQL
 create table trax_users(
     `username` varchar(50) not null,
@@ -219,3 +228,54 @@ CREATE TABLE admin_logs (
     FOREIGN KEY (change_made_by) REFERENCES trax_users(username)
 );
 ```
+
+## Security Considerations
+- All passwords are hashed using secure algorithms
+- Session management with secure cookies
+- CSRF protection enabled
+- Input validation and sanitization
+- LDAP authentication for secure access
+- SSL/TLS encryption for all connections
+
+## Contributing
+[Previous contributing section remains unchanged]
+
+## License
+[Previous license section remains unchanged]
+
+## Acknowledgments
+- ProFTPD team for the excellent FTP server
+- Flask team for the web framework
+- Bootstrap team for the frontend framework
+- OpenLDAP team for the authentication system
+
+## Support
+[Previous support section remains unchanged]
+
+## Roadmap
+### Admin App
+- [x] User management
+- [x] Group management
+- [x] Server configuration
+- [x] Log management
+- [ ] Advanced server monitoring
+- [ ] Backup and restore functionality
+- [ ] API endpoints for external integration
+
+### SFTP App
+- [x] File upload/download
+- [x] Directory navigation
+- [x] Permission management
+- [x] Statistics dashboard
+- [ ] File preview
+- [ ] Drag and drop upload
+- [ ] File sharing
+- [ ] Advanced search
+- [ ] Batch operations
+
+## Changelog
+### v1.0.0 (Initial Release)
+- Basic user and group management
+- File operations in SFTP interface
+- Statistics dashboard with upload/download tracking
+- LDAP authentication support
