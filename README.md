@@ -69,10 +69,17 @@ A modern web-based SFTP client interface that allows users to manage their files
 
 ### Steps
 1. Clone the repository:
+<<<<<<< HEAD
    ```bash
    git clone https://github.com/yourusername/proftpd_flask.git
    cd proftpd_flask
    ```
+=======
+    ```bash
+    git clone https://github.com/sanashii/proftpd_flask.git
+    cd proftpd_flask
+    ```
+>>>>>>> 4157088a0dca177f0403c48ef604980c50beb558
 
 2. Create and activate virtual environment:
    ```bash
