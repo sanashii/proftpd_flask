@@ -1,0 +1,5 @@
+2025-03-13 18:28:10,898 INFO: SFTP app startup [in /Users/andreabaulita/Github/proftpd_flask/proftpd_sftp_app/app.py:32]
+2025-03-13 18:29:07,885 INFO: SFTP app startup [in /Users/andreabaulita/Github/proftpd_flask/proftpd_sftp_app/app.py:32]
+2025-03-13 18:29:08,010 INFO: SFTP app startup [in /Users/andreabaulita/Github/proftpd_flask/proftpd_sftp_app/app.py:32]
+2025-03-13 18:29:12,620 ERROR: 404 error: http://127.0.0.1:5001/favicon.ico [in /Users/andreabaulita/Github/proftpd_flask/proftpd_sftp_app/app.py:326]
+2025-03-13 18:29:16,353 INFO: User user1 logged in successfully [in /Users/andreabaulita/Github/proftpd_flask/proftpd_sftp_app/app.py:159]

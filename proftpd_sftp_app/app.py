@@ -47,7 +47,7 @@ app.config['SECRET_KEY'] = 'sftp-secret-key-change-in-production'
 
 # Initialize rate limiter
 limiter = Limiter(
-    app,
+    app=app,
     key_func=get_remote_address,
     default_limits=["200 per day", "50 per hour"]
 )
